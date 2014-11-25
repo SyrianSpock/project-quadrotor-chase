@@ -90,7 +90,7 @@ void neighbors_selection_read_message_from_neighbors(neighbors_t *neighbors, uin
 	mavlink_msg_global_position_int_decode(msg,&packet);
 	//Check if coming from a neighbor
 
-	if (msg->sysid != 1)
+	if (msg->sysid == 1)
 	{
 		global_position_t global_pos_neighbor;
 		local_coordinates_t local_pos_neighbor;

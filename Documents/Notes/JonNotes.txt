@@ -1,0 +1,236 @@
+FILE
+{
+	track_following.h ("Write your code here")
+	This file implements a strategy to follow a GPS track
+	
+	task (Line 248) -> navigation (Line 928) -> navigation (Line 737) -> track_following
+}
+	
+OBJECTIVE
+{
+	Obtain current track_following->waypoint_handler->waypoint_following.pos[i]
+}
+
+STRUCTURES
+{
+	track_following_t* track_following (See track_following.h)
+	
+		typedef struct
+		{
+			float dist2following;
+			mavlink_waypoint_handler_t* waypoint_handler;
+			neighbors_t* neighbors;
+		}track_following_t;
+		
+		dist2following (See track_following.c)
+			track_following->dist2following = 0.0f;
+			for(i=0;i<3;++i)
+			{
+				track_following->waypoint_handler->waypoint_following.pos[i] = track_following->neighbors->neighbors_list[0].position[i];
+				track_following->dist2following += SQR(track_following->neighbors->neighbors_list[0].position[i] - track_following->neighbors->position_estimator->local_position.pos[i]);
+				// (Waypoint-DronePosition)^2
+			}
+
+			track_following->dist2following = maths_fast_sqrt(track_following->dist2following);
+			
+	waypoint_handler (See mavlink_waypoint_handler.h)
+		
+		NOTES: 	- Does not seem to include velocity parameters
+				- Used to give the waypoint to follow
+
+		typedef struct
+		{
+			waypoint_struct waypoint_list[MAX_WAYPOINTS];				///< The array of all waypoints (max MAX_WAYPOINTS)
+			waypoint_struct current_waypoint;							///< The structure of the current waypoint
+			uint16_t number_of_waypoints;								///< The total number of waypoints
+			int8_t current_waypoint_count;								///< The number of the current waypoint
+			
+			local_coordinates_t waypoint_coordinates;					///< The coordinates of the waypoint in GPS navigation mode (MAV_MODE_AUTO_ARMED)
+			local_coordinates_t waypoint_hold_coordinates;				///< The coordinates of the waypoint in position hold mode (MAV_MODE_GUIDED_ARMED)
+			local_coordinates_t waypoint_critical_coordinates;			///< The coordinates of the waypoint in critical state
+			local_coordinates_t waypoint_following;						///< The coordinates of the waypoint to follow
+			float dist2wp_sqr;											///< The square of the distance to the waypoint
+			
+			bool hold_waypoint_set;										///< Flag to tell if the hold position waypoint is set
+
+			bool waypoint_sending;										///< Flag to tell whether waypoint are being sent
+			bool waypoint_receiving;									///< Flag to tell whether waypoint are being received or not
+			
+			int32_t sending_waypoint_num;								///< The ID number of the sending waypoint
+			int32_t waypoint_request_number;							///< The ID number of the requested waypoint
+
+			uint16_t num_waypoint_onboard;								///< The number of waypoint onboard
+
+			uint32_t start_timeout;										///< The start time for the waypoint timeout
+			uint32_t timeout_max_waypoint;								///< The max waiting time for communication
+
+			position_estimator_t* position_estimator;					///< The pointer to the position estimation structure
+			const ahrs_t* ahrs;											///< The pointer to the attitude estimation structure
+			state_t* state;												///< The pointer to the state structure
+			mavlink_communication_t* mavlink_communication;				///< The pointer to the MAVLink communication structure
+			const mavlink_stream_t* mavlink_stream;						///< Pointer to MAVLink stream
+
+		}mavlink_waypoint_handler_t;
+		
+		typedef struct
+		{
+			uint8_t frame;												///< The reference frame of the waypoint
+			uint16_t waypoint_id;										///< The MAV_CMD_NAV id of the waypoint
+			uint8_t current;											///< Flag to tell whether the waypoint is the current one or not
+			uint8_t autocontinue;										///< Flag to tell whether the vehicle should auto continue to the next waypoint once it reaches the current waypoint
+			float param1;												///< Parameter depending on the MAV_CMD_NAV id
+			float param2;												///< Parameter depending on the MAV_CMD_NAV id
+			float param3;												///< Parameter depending on the MAV_CMD_NAV id
+			float param4;												///< Parameter depending on the MAV_CMD_NAV id
+			double x;													///< The value on the x axis (depends on the reference frame)
+			double y;													///< The value on the y axis (depends on the reference frame)
+			double z;													///< The value on the z axis (depends on the reference frame)
+		} waypoint_struct;
+	
+	neighbors (See neighbor_selection.h)
+		
+		typedef struct
+		{
+			uint8_t number_of_neighbors;								///< The actual number of neighbors at a given time step
+			float safe_size;											///< The safe size for collision avoidance
+			track_neighbor_t neighbors_list[MAX_NUM_NEIGHBORS];			///< The list of neighbors structure
+			float collision_dist_sqr;									///< The square of the collision distance
+			float near_miss_dist_sqr;									///< The square of the near-miss distance
+			position_estimator_t* position_estimator;					///< The pointer to the position estimator structure
+			const mavlink_stream_t* mavlink_stream;						///< The pointer to the MAVLink stream
+		} neighbors_t;
+		
+		typedef struct
+		{
+			uint8_t neighbor_ID;											///< The MAVLink ID of the vehicle
+			float position[3];												///< The 3D position of the neighbor in m
+			float velocity[3];												///< The 3D velocity of the neighbor in m/s
+			uint32_t time_msg_received;										///< The time at which the message was received in ms
+		} track_neighbor_t;	
+			
+	data_logging (See data_logging.h) // NOTE: DO NOT HAVE ACCESS TO THIS YET
+	
+		/**
+		 * \brief	The structure to log the data
+		 *
+		 * \details  	data_logging_set is implemented as pointer because its memory will be
+		 * 				allocated during initialisation
+		 */
+		typedef struct  
+		{	
+			bool debug;													///< Indicates if debug messages should be printed for each param change
+			data_logging_set_t* data_logging_set;						///< Pointer to a set of parameters, needs memory allocation
+			
+			FRESULT fr;													///< The result of the fatfs functions
+			FATFS fs;													///< The fatfs handler
+			FIL fil;													///< The fatfs file handler
+
+			uint32_t time_ms;											///< The microcontroller time in ms
+
+			int buffer_name_size;										///< The buffer for the size of the file's name
+			int buffer_add_size;										///< The buffer for the size of the file's extension char*
+
+			char *file_name;											///< The file name
+			char *name_n_extension;										///< Stores the name of the file
+
+			bool file_init;												///< A flag to tell whether a file is init or not
+			bool file_opened;											///< A flag to tell whether a file is opened or not
+			bool file_name_init;										///< A flag to tell whether a valid name was proposed
+			bool sys_mounted;											///< A flag to tell whether the file system is mounted
+			
+			uint32_t loop_count;										///< Counter to try to mount the SD card many times
+			
+			uint32_t logging_time;										///< The time that we've passed logging since the last f_close
+			
+			uint32_t log_data;											///< A flag to stop/start writing to file
+			
+			uint32_t sys_id;											///< the system ID
+			
+			const state_t* state;										///< The pointer to the state structure	
+		}data_logging_t;
+		
+		/**
+		 * \brief 	Configuration for the module data logging
+		 */
+		typedef struct
+		{
+			uint32_t max_data_logging_count;							///< Maximum number of parameters
+			bool debug;													///< Indicates if debug messages should be printed for each param change
+			uint32_t log_data;											///< The initial state of writing a file
+		} data_logging_conf_t;
+}
+
+VARIABLES
+{
+	// Velocity
+		neighbors->neighbors_list[0].velocity[X] // X Velocity (See end of neighbor_selection.c)
+		neighbors->neighbors_list[0].velocity[Y] // Y Velocity
+		neighbors->neighbors_list[0].velocity[Z] // Z Velocity
+		// Warning: Possible to replace X,Y,Z by 0,1,2? (See neighbor_selection.h)
+	
+	// Time since last waypoint obtained
+		// There will need to be a check for the effect caused by the communication lag
+		timeWP = data_logging.time_ms - neighbors->neighbors_list[0].time_msg_received (See data_logging.h and neighbor_selection.h)
+		// NOTE: NEEDS DATA_LOGGING VARIABLE !!!
+	
+	// Previous waypoint
+		// Will have to be stored for non linear predictions
+		
+	
+	// ATTENTION
+		A possibility would be to create a new structure containing the information for waypoints:
+		- Time since last waypoint message
+		- Coordinates for previous waypoints
+}
+
+FUNCTIONS
+{
+	quick_trig_sin(float x); // Found in util\quick_trig.c
+	quick_trig_cos(float x);
+}
+
+QUESTIONS
+{
+	In track_following.c - void track_following_get_waypoint(track_following_t* track_following)
+		Why is the sqrt called each time instead of once at the end? Avoid overflow?
+	
+	Is there supposed to be one waypoint only?
+	
+	Is the waypoint (neighbor) information sent once every 4 seconds or continuously?
+	
+	What is the private library folder? Do we use it?
+}
+
+PSEUDOCODE
+{
+												//LINEAR//
+												
+	void track_following_improve_waypoint_following(track_following_t* track_following)
+	{
+		// Write your code here
+		
+		//Time since last waypoint update (+ message send duration in case of lag)
+		// timeWP = data_logging.time_ms - neighbors->neighbors_list[0].time_msg_received // REQUIRES DATA_LOGGING !!!
+		
+		track_following_linear_strategy(track_following, timeWP);
+	}
+
+	void track_following_linear_strategy(track_following_t* track_following, float timeWP)
+	{
+		float offset;
+		
+		for(i=0;i<3;++i)
+		{
+			offset = neighbors->neighbors_list[0].velocity[i]*timeWP*1000; // velocity in m/s and timeWP in ms
+			
+			track_following->waypoint_handler->waypoint_following.pos[i] =
+					track_following->neighbors->neighbors_list[0].position[i]
+					+ offset;
+		}
+	}
+	
+	void track_following_non_linear_strategy(track_following_t* track_following, float timeWP, track_following_WP* previous_waypoints)
+	{
+		
+	}
+}

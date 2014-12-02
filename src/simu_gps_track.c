@@ -44,7 +44,7 @@
 #include "time_keeper.h"
 #include "print_util.h"
 
-#define TRACK 3
+#define TRACK 1
 
 #if TRACK == 0
 	#define SIZE_MAX_TABLE 302

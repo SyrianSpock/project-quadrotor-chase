@@ -43,6 +43,7 @@
 #include "track_following.h"
 #include "print_util.h"
 #include "maths.h"
+#include "time_keeper.h" // Added to obtain time information
 
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors)
 {
@@ -73,4 +74,19 @@ void track_following_get_waypoint(track_following_t* track_following)
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
 	// Write your code here
+	
+	float offset;
+		
+	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
+	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
+	uint32_t time offset = time_actual - timeWP; // time since last waypoint in ms
+	
+	for(i=0;i<3;++i)
+	{
+		offset = track_following->neighbors->neighbors_list[0].velocity[i]*time_offset*1000; // velocity in m/s and time_offset in ms
+		
+		track_following->waypoint_handler->waypoint_following.pos[i] =
+				track_following->neighbors->neighbors_list[0].position[i]
+				+ offset;
+	}
 }

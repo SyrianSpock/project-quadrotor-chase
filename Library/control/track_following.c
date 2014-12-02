@@ -44,10 +44,11 @@
 #include "print_util.h"
 #include "maths.h"
 
-void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors)
+void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
 	track_following->waypoint_handler = waypoint_handler;
 	track_following->neighbors = neighbors;
+	track_following->position_estimator = position_estimator;
 
 	track_following->dist2following = 0.0f;
 
@@ -64,7 +65,7 @@ void track_following_get_waypoint(track_following_t* track_following)
 	for(i=0;i<3;++i)
 	{
 		track_following->waypoint_handler->waypoint_following.pos[i] = track_following->neighbors->neighbors_list[0].position[i];
-		track_following->dist2following += SQR(track_following->neighbors->neighbors_list[0].position[i] - track_following->neighbors->position_estimator->local_position.pos[i]);
+		track_following->dist2following += SQR(track_following->neighbors->neighbors_list[0].position[i] - track_following->position_estimator->local_position.pos[i]);
 	}
 	
 	track_following->dist2following = maths_fast_sqrt(track_following->dist2following);

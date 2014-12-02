@@ -391,7 +391,13 @@ void central_data_init()
 	
 	track_following_init(	&central_data.track_following,
 							&central_data.waypoint_handler,
-							&central_data.neighbor_selection);
+							&central_data.neighbor_selection,
+							&central_data.position_estimator);
+	
+	simu_gps_track_init(&central_data.simu_gps_track,
+						&central_data.neighbor_selection,
+						&central_data.mavlink_communication.mavlink_stream,
+						&central_data.state);
 }
 
 central_data_t* central_data_get_pointer_to_struct(void)

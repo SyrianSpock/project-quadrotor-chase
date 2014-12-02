@@ -114,6 +114,8 @@ src\central_data.c
 
 src\mavlink_telemetry.c
 
+src\simu_gps_track.c
+
 src\tasks.c
 
 Library\communication\mavlink_stream.c

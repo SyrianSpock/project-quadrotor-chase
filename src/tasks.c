@@ -59,6 +59,7 @@
 
 #include "remote.h"
 #include "attitude_controller_p2.h"
+#include "simu_gps_track.h"
 
 central_data_t* central_data;
 
@@ -256,6 +257,10 @@ void tasks_create_tasks()
 	scheduler_add_task(scheduler, 100000,   RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOW	, (task_function_t)&data_logging_update								, (task_argument_t)&central_data->data_logging			, 9);
 	
 	scheduler_add_task(scheduler, 500000,	RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST , &tasks_led_toggle													, 0														, 10);
+
+	scheduler_add_task(scheduler, MSG_PERIOD_SEC * 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_pack_msg			,(task_argument_t)&central_data->simu_gps_track			, 11);
+
+	scheduler_add_task(scheduler, 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_send_neighbor_heartbeat			,(task_argument_t)&central_data->simu_gps_track			, 12);
 
 	scheduler_sort_tasks(scheduler);
 }

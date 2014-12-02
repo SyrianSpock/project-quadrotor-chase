@@ -92,6 +92,7 @@ extern "C" {
 
 #include "neighbor_selection.h"
 #include "track_following.h"
+#include "simu_gps_track.h"
 
 // TODO : update documentation
 
@@ -150,6 +151,7 @@ typedef struct  {
 	neighbors_t neighbor_selection;								///< The neighbor selection structure
 	
 	track_following_t track_following;							///< The track following structure
+	simu_gps_track_t simu_gps_track;							///< The simulated gps track
 	
 } central_data_t;
 

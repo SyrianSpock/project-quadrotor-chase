@@ -49,13 +49,14 @@ extern "C" {
 
 #include "mavlink_waypoint_handler.h"
 #include "neighbor_selection.h"
-
+#include "position_estimation.h"
 
 typedef struct
 {
-	float dist2following;
-	mavlink_waypoint_handler_t* waypoint_handler;
-	neighbors_t* neighbors;
+	float dist2following;									///< The distance with the neighbor
+	mavlink_waypoint_handler_t* waypoint_handler;			///< The pointer to the waypoint handler
+	neighbors_t* neighbors;									///< The pointer to the neighbor structure
+	position_estimator_t* position_estimator;				///< The pointer to the position estimation structure
 }track_following_t; 
 
 
@@ -65,8 +66,9 @@ typedef struct
  * \param	track_following			The pointer to the structure of the track following
  * \param	waypoint_handler		The pointer to the structure of the MAVLink waypoint handler
  * \param	neighbors				The pointer to the neighbor selection module
+ * \param	position_estimator		The pointer to the position estimation module
  */
-void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors);
+void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator);
 
 
 /**

@@ -43,7 +43,7 @@
 #include "joystick_parsing_telemetry.h"
 #include "time_keeper.h"
 #include "print_util.h"
-#include "constants.h"
+#include "conf_constants.h"
 
 //------------------------------------------------------------------------------
 // PRIVATE FUNCTIONS DECLARATION

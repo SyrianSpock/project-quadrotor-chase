@@ -1,0 +1,92 @@
+task_return_t tasks_run_stabilisation(void* arg);
+task_return_t tasks_run_stabilisation(void* arg)
+{
+	tasks_run_imu_update(0);
+	remote_update( &central_data->remote );
+	
+	mav_mode_t mode = central_data->state.mav_mode;
+
+	if( mode.ARMED == ARMED_OFF )
+	{
+		// Set command to current heading
+		central_data->command.attitude.rpy[2] = coord_conventions_quat_to_aero(central_data->ahrs.qe).rpy[2];
+		servos_set_value_failsafe( &central_data->servos );
+	}
+	else if( mode.MANUAL == MANUAL_ON && mode.GUIDED == GUIDED_ON )
+	{
+		// Get manual control
+		if( central_data->state.remote_active == 1 )
+		{
+			// Get attitude from remote
+			central_data->command.attitude.mode = ATTITUDE_COMMAND_MODE_RPY;
+			remote_get_attitude_command_integrate_yaw (  &central_data->remote,
+														 0.01f,
+														 &central_data->command.attitude );
+		}
+		else
+		{
+			// Get attitude from joystick
+			joystick_parsing_get_attitude_command_integrate_yaw(&central_data->joystick_parsing, 
+																0.01f,
+														 		&central_data->command.attitude );
+		}
+
+		// Control attitude
+		attitude_controller_update( &central_data->attitude_controller );
+		
+		// Estimate altitude
+		altitude_estimation_update( &central_data->altitude_estimation );
+
+		// Control altitude
+		central_data->command.position.xyz[Z] = -2.0f;
+		central_data->command.position.mode = POSITION_COMMAND_MODE_LOCAL;
+		altitude_controller_update( &central_data->altitude_controller );
+
+		// Mix to servos
+		servos_mix_quadcopter_diag_update( &central_data->servo_mix );
+	}
+	else if( mode.MANUAL == MANUAL_ON && mode.STABILISE == STABILISE_ON )
+	{
+		// Get manual control
+		if( central_data->state.remote_active == 1 )
+		{
+			// Get attitude and thrust from remote
+			central_data->command.attitude.mode = ATTITUDE_COMMAND_MODE_RPY;
+			remote_get_attitude_command_integrate_yaw (  &central_data->remote,
+														 0.01f,
+														 &central_data->command.attitude );
+			remote_get_thrust_command(	&central_data->remote, 
+										&central_data->command.thrust );
+		}
+		else
+		{
+			// Get attitude from joystick
+			central_data->command.attitude.mode = ATTITUDE_COMMAND_MODE_RPY;
+			joystick_parsing_get_attitude_command_integrate_yaw(&central_data->joystick_parsing, 
+																0.01f,
+														 		&central_data->command.attitude );
+			joystick_parsing_get_thrust_command(	&central_data->joystick_parsing, 
+													&central_data->command.thrust );
+		}
+
+	
+		
+		// Control attitude
+		attitude_controller_update( &central_data->attitude_controller );
+			
+		// Mix to servos
+		servos_mix_quadcopter_diag_update( &central_data->servo_mix );
+	}
+	else
+	{
+		servos_set_value_failsafe( &central_data->servos );
+	}
+
+	// !!! -- for safety, this should remain the only place where values are written to the servo outputs! --- !!!
+	if ( mode.HIL == HIL_OFF )
+	{
+		pwm_servos_write_to_hardware( &central_data->servos );
+	}
+	
+	return TASK_RUN_SUCCESS;
+} 

@@ -50,6 +50,7 @@ extern "C" {
 #include "mavlink_waypoint_handler.h"
 #include "neighbor_selection.h"
 #include "position_estimation.h"
+#include "mavlink_stream.h"
 
 typedef struct
 {
@@ -85,6 +86,8 @@ void track_following_get_waypoint(track_following_t* track_following);
  * \param	track_following			The pointer to the structure of the track following
  */
 void track_following_improve_waypoint_following(track_following_t* track_following);
+
+void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg);
 
 #ifdef __cplusplus
 }

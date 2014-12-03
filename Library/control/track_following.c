@@ -43,6 +43,7 @@
 #include "track_following.h"
 #include "print_util.h"
 #include "maths.h"
+#include "time_keeper.h"
 
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
@@ -74,4 +75,14 @@ void track_following_get_waypoint(track_following_t* track_following)
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
 	// Write your code here
+}
+
+void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
+{
+	mavlink_msg_named_value_float_pack(	mavlink_stream->sysid,
+										mavlink_stream->compid,
+										msg,
+										time_keeper_get_millis(),
+										"dist2follow",
+										track_following->dist2following);
 }

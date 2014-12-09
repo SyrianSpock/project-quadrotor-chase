@@ -77,22 +77,20 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 {
 	// Write your code here
 	
-	float time_offset time_last_WP_ms(track_following);	
 	track_following_linear_strategy(track_following);
 }
 
 							// STRATEGIES //
 
 // LINEAR STRATEGY
-void track_following_linear_strategy(track_following_t* track_following/*, float timeWP*/)
+void track_following_linear_strategy(track_following_t* track_following)
 {
-	float position_offset;	
 	float time_offset = time_last_WP_ms(track_following);
 	
 	for(i=0;i<3;i++)
 	{
 		// velocity in m/s and time_offset in ms
-		position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*time_offset*1000;
+		float position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*time_offset*1000;
 		
 		track_following->waypoint_handler->waypoint_following.pos[i] =
 				track_following->neighbors->neighbors_list[0].position[i]
@@ -100,6 +98,7 @@ void track_following_linear_strategy(track_following_t* track_following/*, float
 	}
 }
 
+/*
 // CIRCLE STRATEGY
 void track_following_non_linear_strategy(track_following_t* track_following, track_following_WP* previous_waypoints)
 {
@@ -129,7 +128,7 @@ void track_following_non_linear_strategy(track_following_t* track_following, tra
 	
 	write_WP_data(,,) // Save new and old waypoints
 }
-
+*/
 							// Functions //
 	
 // time_last_WP_ms: Time since last waypoint was received
@@ -138,8 +137,11 @@ float time_last_WP_ms(track_following_t* track_following)
 	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
 	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
 	uint32_t time_offset = time_actual - timeWP; // time since last waypoint in ms
+	
+	return time_offset;
 }
 
+/*
 // vector_intersection: returns the coordinates of the vector intersection
 float vector_intersection(float v_pos[3], float v_dir[3], float u_pos[3], float u_dir[3])
 {
@@ -212,3 +214,4 @@ void write_WP_data()
 	// Save previous waypoints
 	// Write new waypoint
 }
+*/

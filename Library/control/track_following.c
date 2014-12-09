@@ -45,10 +45,12 @@
 #include "maths.h"
 #include "time_keeper.h" // Added to obtain time information
 
-void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors)
+
+void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
 	track_following->waypoint_handler = waypoint_handler;
 	track_following->neighbors = neighbors;
+	track_following->position_estimator = position_estimator;
 
 	track_following->dist2following = 0.0f;
 
@@ -65,7 +67,7 @@ void track_following_get_waypoint(track_following_t* track_following)
 	for(i=0;i<3;++i)
 	{
 		track_following->waypoint_handler->waypoint_following.pos[i] = track_following->neighbors->neighbors_list[0].position[i];
-		track_following->dist2following += SQR(track_following->neighbors->neighbors_list[0].position[i] - track_following->neighbors->position_estimator->local_position.pos[i]);
+		track_following->dist2following += SQR(track_following->neighbors->neighbors_list[0].position[i] - track_following->position_estimator->local_position.pos[i]);
 	}
 	
 	track_following->dist2following = maths_fast_sqrt(track_following->dist2following);
@@ -215,3 +217,14 @@ void write_WP_data()
 	// Write new waypoint
 }
 */
+
+
+void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
+{
+	mavlink_msg_named_value_float_pack(	mavlink_stream->sysid,
+										mavlink_stream->compid,
+										msg,
+										time_keeper_get_millis(),
+										"dist2follow",
+										track_following->dist2following);
+}

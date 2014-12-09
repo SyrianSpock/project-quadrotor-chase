@@ -49,13 +49,15 @@ extern "C" {
 
 #include "mavlink_waypoint_handler.h"
 #include "neighbor_selection.h"
-
+#include "position_estimation.h"
+#include "mavlink_stream.h"
 
 typedef struct
 {
-	float dist2following;
-	mavlink_waypoint_handler_t* waypoint_handler;
-	neighbors_t* neighbors;
+	float dist2following;									///< The distance with the neighbor
+	mavlink_waypoint_handler_t* waypoint_handler;			///< The pointer to the waypoint handler
+	neighbors_t* neighbors;									///< The pointer to the neighbor structure
+	position_estimator_t* position_estimator;				///< The pointer to the position estimation structure
 }track_following_t; 
 
 
@@ -65,8 +67,9 @@ typedef struct
  * \param	track_following			The pointer to the structure of the track following
  * \param	waypoint_handler		The pointer to the structure of the MAVLink waypoint handler
  * \param	neighbors				The pointer to the neighbor selection module
+ * \param	position_estimator		The pointer to the position estimation module
  */
-void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors);
+void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator);
 
 
 /**
@@ -84,15 +87,16 @@ void track_following_get_waypoint(track_following_t* track_following);
  */
 void track_following_improve_waypoint_following(track_following_t* track_following);
 
-							// ADDED STRATEGIES
-							
+// ADDED STRATEGIES							
 // LINEAR STRATEGY
 void track_following_linear_strategy(track_following_t* track_following);
 
-							// ADDED FUNTIONS //
-
+// ADDED FUNTIONS //
 // time_last_WP_ms: Time since last waypoint was received
 float time_last_WP_ms(track_following_t* track_following);
+
+void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg);
+
 
 #ifdef __cplusplus
 }

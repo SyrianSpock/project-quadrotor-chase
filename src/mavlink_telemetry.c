@@ -324,8 +324,10 @@ void mavlink_telemetry_init(void)
 	mavlink_communication_add_msg_send(mavlink_communication,	500000,	RUN_NEVER,		PERIODIC_ABSOLUTE, PRIORITY_NORMAL, (mavlink_send_msg_function_t)&simulation_telemetry_send_state,							&central_data->sim_model, 			MAVLINK_MSG_ID_HIL_STATE);								// ID 90
 	mavlink_communication_add_msg_send(mavlink_communication,	500000,	RUN_NEVER,		PERIODIC_ABSOLUTE, PRIORITY_NORMAL, (mavlink_send_msg_function_t)&simulation_telemetry_send_quaternions,					&central_data->sim_model,			MAVLINK_MSG_ID_HIL_STATE_QUATERNION);					// ID 115
 	
-	mavlink_communication_add_msg_send(mavlink_communication,	250000,	RUN_NEVER,		PERIODIC_ABSOLUTE, PRIORITY_NORMAL, (mavlink_send_msg_function_t)&scheduler_telemetry_send_rt_stats,						&central_data->scheduler, 			MAVLINK_MSG_ID_NAMED_VALUE_FLOAT);						// ID 251
+	//mavlink_communication_add_msg_send(mavlink_communication,	250000,	RUN_NEVER,		PERIODIC_ABSOLUTE, PRIORITY_NORMAL, (mavlink_send_msg_function_t)&scheduler_telemetry_send_rt_stats,						&central_data->scheduler, 			MAVLINK_MSG_ID_NAMED_VALUE_FLOAT);						// ID 251
 	// mavlink_communication_add_msg_send(mavlink_communication,	100000,	RUN_REGULAR,	PERIODIC_ABSOLUTE, PRIORITY_NORMAL, (mavlink_send_msg_function_t)&sonar_i2cxl_telemetry_send_telemetery,								&central_data->i2cxl_sonar, 		MAVLINK_MSG_ID_NAMED_VALUE_FLOAT);						// ID 251
+
+	mavlink_communication_add_msg_send(mavlink_communication, 250000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_NORMAL, (mavlink_send_msg_function_t)&track_following_send_dist, &central_data->track_following, MAVLINK_MSG_ID_NAMED_VALUE_FLOAT);
 
 	scheduler_sort_tasks(&central_data->mavlink_communication.scheduler);
 	

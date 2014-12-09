@@ -71,22 +71,144 @@ void track_following_get_waypoint(track_following_t* track_following)
 	track_following->dist2following = maths_fast_sqrt(track_following->dist2following);
 }
 
+							// IMPROVE WAYPOINT //
+
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
 	// Write your code here
 	
-	float offset;
-		
-	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
-	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
-	uint32_t time offset = time_actual - timeWP; // time since last waypoint in ms
+	float time_offset time_last_WP_ms(track_following);	
+	track_following_linear_strategy(track_following);
+}
+
+							// STRATEGIES //
+
+// LINEAR STRATEGY
+void track_following_linear_strategy(track_following_t* track_following/*, float timeWP*/)
+{
+	float position_offset;	
+	float time_offset = time_last_WP_ms(track_following);
 	
-	for(i=0;i<3;++i)
+	for(i=0;i<3;i++)
 	{
-		offset = track_following->neighbors->neighbors_list[0].velocity[i]*time_offset*1000; // velocity in m/s and time_offset in ms
+		// velocity in m/s and time_offset in ms
+		position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*time_offset*1000;
 		
 		track_following->waypoint_handler->waypoint_following.pos[i] =
 				track_following->neighbors->neighbors_list[0].position[i]
-				+ offset;
+				+ position_offset;
 	}
+}
+
+// CIRCLE STRATEGY
+void track_following_non_linear_strategy(track_following_t* track_following, track_following_WP* previous_waypoints)
+{
+	// Position and velocities -> still need to implement
+	float WP_sent_new_pos[3]; // Waypoint last received 
+	float WP_sent_new_vel[3];
+	float WP_sent_old_pos[3]; // Previous waypoint before last
+	float WP_sent_old_vel[3];
+	float WP_pos_predict[3]; // Current waypoint the quadrostalker must follow
+	
+	// Orthogonal velocity vectors to find the rotation centre
+	float WP_sent_new_vel_ortho[3] = vector_orthogonal(WP_sent_new_vel);
+	float WP_sent_old_vel_ortho[3] = vector_orthogonal(WP_sent_old_vel);
+	
+	float rotation_centre = vector_intersection(WP_sent_old_pos,
+												WP_sent_old_vel_ortho,
+												WP_sent_old_pos,
+												WP_sent_new_vel_ortho);
+												
+	float rotation_angle_tot = vector_rotation_angle(WP_sent_old_vel_ortho, WP_sent_new_vel_ortho) 
+	
+	float t = time_last_WP_ms(track_following);
+	// Angle with the last received coordinates viewed from centre :
+	float rotation_angle_current = rotation_angle_tot*t/4000;
+
+	WP_pos_predict = WP_rotation_pos(WP_sent_new_pos, rotation_centre, rotation_angle_current);
+	
+	write_WP_data(,,) // Save new and old waypoints
+}
+
+							// Functions //
+	
+// time_last_WP_ms: Time since last waypoint was received
+float time_last_WP_ms(track_following_t* track_following)
+{
+	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
+	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
+	uint32_t time_offset = time_actual - timeWP; // time since last waypoint in ms
+}
+
+// vector_intersection: returns the coordinates of the vector intersection
+float vector_intersection(float v_pos[3], float v_dir[3], float u_pos[3], float u_dir[3])
+{
+	float intersection_pos[2]; // Intersection coordinates
+	float w[2];
+	
+	for (int i=0; i<2; i++) {
+		float w[i] = u_pos[i] - v_pos[i];
+	}
+	
+	float s = (v_dir[1]*w[0] - v_dir[0]*w[1]) / (v_dir[0]*u_dir[1] - v_dir[1]*u_dir[0]);
+	
+	
+	intersection_pos[0] = u_pos[0] + s*w[0];
+	intersection_pos[1] = u_pos[1] + s*w[1];
+	intersection_pos[2] = u_pos[2];
+	
+	return intersection_pos;
+}
+
+// vector_rotation_angle: returns the angle between the two vectors
+float vector_rotation_angle(float v_dir[3], float u_dir[3])
+{
+	float angle;
+	
+	float uv_scalar_product = vectors_scalar_product(v_dir[3], u_dir[3]);
+	float u_norm = vectors_norm(u_dir[3]);
+	float v_norm = vectors_norm(v[3]);
+	float angle = quick_trig_acos(uv_scalar_product/(u_norm*v_norm));
+	
+	return angle;
+}
+
+// vector_orthogonal: returns a vector orthogonal to the original
+float vector_orthogonal(float v_dir[3])
+{
+	float v_dir_ortho();
+	
+	v_dir_ortho[0] = v_dir[1];
+	v_dir_ortho[1] = v_dir[0];
+	v_dir_ortho[2] = v_dir[2];
+	
+	return v_dir_ortho;
+}
+
+// WP_rotation_pos: Calculates the new waypoint according to the rotation angle
+float WP_rotation_pos(float pos[3], float centre[3], float angle)
+{
+	float WP_new[3];
+	
+	WP_new[0] = pos[0] - centre[0];
+	WP_new[1] = pos[1] - centre[1];
+	WP_new[2] = pos[2];
+	
+	float angle_cos = quick_trig_cos(angle);
+	float angle_sin = quick_trig_sin(angle);
+	
+	WP_new[0] = cos_angle*pos[0] - sin_angle*pos[1];
+	WP_new[1] = sin_angle*pos[0] + cos_angle*pos[1];
+	
+	WP_new[0] = WP_new[0] + centre[0];
+	WP_new[1] = WP_new[1] + centre[1];
+	
+	return WP_new;
+}
+
+// write_WP_data: Save the data for the next iteration
+void write_WP_data()
+{
+	// Save previous waypoints
+	// Write new waypoint
 }

@@ -75,9 +75,9 @@ void track_following_get_waypoint(track_following_t* track_following)
 
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
-	// Write your code here
-	
+	// Write your code here	
 	track_following_linear_strategy(track_following);
+	//track_following_non_linear_strategy(track_following);
 }
 
 							// STRATEGIES //
@@ -85,17 +85,20 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 // LINEAR STRATEGY
 void track_following_linear_strategy(track_following_t* track_following)
 {
-	float time_offset = time_last_WP_ms(track_following);
+	uint32_t time_offset = time_last_WP_ms(track_following);
 	
-	for(i=0;i<3;i++)
+	float position_offset = 0;
+	
+	for(int i=0;i<2;i++)
 	{
 		// velocity in m/s and time_offset in ms
-		float position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*time_offset*1000;
+		position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*((float)time_offset)/1000.0f;
 		
 		track_following->waypoint_handler->waypoint_following.pos[i] =
 				track_following->neighbors->neighbors_list[0].position[i]
 				+ position_offset;
 	}
+	track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2]*2.0;
 }
 
 /*
@@ -132,7 +135,7 @@ void track_following_non_linear_strategy(track_following_t* track_following, tra
 							// Functions //
 	
 // time_last_WP_ms: Time since last waypoint was received
-float time_last_WP_ms(track_following_t* track_following)
+uint32_t time_last_WP_ms(track_following_t* track_following)
 {
 	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
 	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms

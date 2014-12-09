@@ -92,7 +92,7 @@ void track_following_linear_strategy(track_following_t* track_following);
 							// ADDED FUNTIONS //
 
 // time_last_WP_ms: Time since last waypoint was received
-float time_last_WP_ms(track_following_t* track_following);
+uint32_t time_last_WP_ms(track_following_t* track_following);
 
 #ifdef __cplusplus
 }

@@ -87,16 +87,7 @@ void track_following_get_waypoint(track_following_t* track_following);
  */
 void track_following_improve_waypoint_following(track_following_t* track_following);
 
-// ADDED STRATEGIES							
-// LINEAR STRATEGY
-void track_following_linear_strategy(track_following_t* track_following);
-
-// ADDED FUNTIONS //
-// time_last_WP_ms: Time since last waypoint was received
-uint32_t time_last_WP_ms(track_following_t* track_following);
-
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg);
-
 
 #ifdef __cplusplus
 }

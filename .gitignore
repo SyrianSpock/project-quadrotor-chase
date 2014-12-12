@@ -39,3 +39,12 @@ visualizer/build/
 
 # custom packager dependency folder
 dependencies/
+
+# Atmel shit
+*.d
+*.atsuo
+*.srec
+*.map
+*.lss
+*.eep
+

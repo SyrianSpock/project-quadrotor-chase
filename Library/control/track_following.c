@@ -44,6 +44,7 @@
 #include "print_util.h"
 #include "maths.h"
 #include "time_keeper.h"
+#include "quick_trig.h"
 
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
@@ -75,6 +76,125 @@ void track_following_get_waypoint(track_following_t* track_following)
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
 	// Write your code here
+	// Write your code here/Dave's code
+	
+	static Bool start = true;
+	
+	static Bool recalculSpeeds = true;
+	
+	static Bool update = true;
+	
+	int16_t i;
+	
+	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
+	static uint32_t timeArtificialWP; // Last artificial waypoint time in ms
+	uint32_t time_offset; // time since last Artificial waypoint in ms
+	
+	static float past_velocity[3];
+	static float past_position[3];
+	
+	static float present_velocity[3];
+	static float present_position[3];
+	
+	static float present_WP_position[3];
+	static float present_WP_heading;
+	
+	static float past_speed;
+	static float present_speed;
+	
+	static float past_heading;
+	static float present_heading;
+	
+	static float dist;
+	static float wRate;
+	static float dist2WP;
+	
+	int speedfactor=2;
+	int distfactor=2;
+	
+	uint32_t deltaT = 500; //deltaT in ms//see what happens with different values...
+	
+	
+	
+	if(start){
+		for(i=0;i<3;++i){
+			past_position[i] = track_following->neighbors->neighbors_list[0].position[i];
+			past_velocity[i] = track_following->neighbors->neighbors_list[0].velocity[i];
+			present_position[i] = track_following->neighbors->neighbors_list[0].position[i];
+			present_velocity[i] = track_following->neighbors->neighbors_list[0].velocity[i];
+			present_WP_position[i] = present_position[i];
+		}
+		timeArtificialWP=time_actual-deltaT;//added -deltaT
+		start=false;
+	}
+	
+	
+	//check for new position and speed coming from the other quad
+	for(i=0;i<3;++i){
+		if(present_position[i] != track_following->neighbors->neighbors_list[0].position[i]){
+			past_position[i]=present_position[i];
+			present_position[i] =track_following->neighbors->neighbors_list[0].position[i];
+			
+			present_WP_position[i]=present_position[i];
+			update=true;
+		}
+		
+		if(past_velocity[i] != track_following->neighbors->neighbors_list[0].velocity[i]){
+			past_velocity[i]=present_velocity[i];
+			present_velocity[i]=track_following->neighbors->neighbors_list[0].velocity[i];
+			recalculSpeeds=true;
+			update=true;
+		}
+	}
+	
+	
+	
+	if(recalculSpeeds){
+		past_speed=maths_fast_sqrt((past_velocity[0]*past_velocity[0])+(past_velocity[1]*past_velocity[1]));
+		present_speed=maths_fast_sqrt((present_velocity[0]*present_velocity[0])+(present_velocity[1]*present_velocity[1]));
+		
+		past_heading=present_heading;
+		
+		if(past_velocity[1]>=0)
+		present_heading = quick_trig_acos(present_velocity[0]/present_speed);
+		else if(past_velocity[1]<0)
+		present_heading = -(quick_trig_acos(present_velocity[0]/present_speed));
+		
+		
+		dist=present_speed*deltaT/1000.0f*speedfactor;
+		wRate=(present_heading-past_heading)/4000.0f;
+		
+		recalculSpeeds=false;
+	}
+
+
+	time_offset = time_actual - timeArtificialWP;
+
+	//set the artificial WP
+	if(time_offset>=deltaT){
+		
+		present_WP_heading=present_WP_heading+wRate*time_offset;
+		
+		present_WP_position[0] = present_WP_position[0]+dist*quick_trig_cos(present_heading);
+		present_WP_position[1] = present_WP_position[1]+dist*quick_trig_sin(present_heading);
+		present_WP_position[2] = present_WP_position[2]; //Assume constant altitude
+		
+		update=true;
+	}
+	
+	
+	
+	//send the WP
+	
+	if(update){
+		for(i=0;i<3;++i){
+			track_following->waypoint_handler->waypoint_following.pos[i] = present_WP_position[i];
+			dist2WP += SQR(present_WP_position[i] - track_following->position_estimator->local_position.pos[i]);
+		}
+		track_following->dist2following = maths_fast_sqrt(dist2WP)*distfactor;//maybe try adding a little something here to make the robot think the waypoint is further away that it actually is.
+		timeArtificialWP=time_keeper_get_millis();
+		update = false;
+	}
 }
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)

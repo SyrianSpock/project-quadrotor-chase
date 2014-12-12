@@ -107,7 +107,7 @@ task_return_t tasks_run_stabilisation(void* arg)
 			central_data->controls.control_mode = VELOCITY_COMMAND_MODE;
 			
 			// if no waypoints are set, we do position hold therefore the yaw mode is absolute
-			if (((central_data->state.nav_plan_active&&(!central_data->navigation.stop_nav)&&(!central_data->navigation.auto_takeoff)&&(!central_data->navigation.auto_landing)))||((central_data->state.mav_state == MAV_STATE_CRITICAL)&&(central_data->navigation.critical_behavior == FLY_TO_HOME_WP)))
+			if (((central_data->state.mav_mode.CUSTOM==CUSTOM_ON)||(central_data->state.nav_plan_active&&(!central_data->navigation.stop_nav)&&(!central_data->navigation.auto_takeoff)&&(!central_data->navigation.auto_landing)))||((central_data->state.mav_state == MAV_STATE_CRITICAL)&&(central_data->navigation.critical_behavior == FLY_TO_HOME_WP)))
 			{
 				central_data->controls.yaw_mode = YAW_COORDINATED;
 			}
@@ -258,8 +258,10 @@ void tasks_create_tasks()
 	
 	scheduler_add_task(scheduler, 500000,	RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST , &tasks_led_toggle													, 0														, 10);
 
+	//comment line to test with other robot
 	scheduler_add_task(scheduler, MSG_PERIOD_SEC * 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_pack_msg			,(task_argument_t)&central_data->simu_gps_track			, 11);
 
+	//comment line to test with other robot
 	scheduler_add_task(scheduler, 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_send_neighbor_heartbeat			,(task_argument_t)&central_data->simu_gps_track			, 12);
 
 	scheduler_sort_tasks(scheduler);

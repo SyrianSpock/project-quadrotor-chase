@@ -48,3 +48,6 @@ dependencies/
 *.lss
 *.eep
 
+# latex files
+*.aux
+*.log

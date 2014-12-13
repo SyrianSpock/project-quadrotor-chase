@@ -59,7 +59,7 @@ void track_following_init(track_following_t* track_following, mavlink_waypoint_h
 
 
 void track_following_get_waypoint(track_following_t* track_following)
-{
+{/*
 	int16_t i;
 
 	track_following->dist2following = 0.0f;
@@ -70,7 +70,7 @@ void track_following_get_waypoint(track_following_t* track_following)
 		track_following->dist2following += SQR(track_following->neighbors->neighbors_list[0].position[i] - track_following->position_estimator->local_position.pos[i]);
 	}
 
-	track_following->dist2following = maths_fast_sqrt(track_following->dist2following);
+	track_following->dist2following = maths_fast_sqrt(track_following->dist2following);*/
 }
 
 void track_following_improve_waypoint_following(track_following_t* track_following)
@@ -116,8 +116,9 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 	static float wRate;
 	static float dist2WP;
 
-	static float P_factor = 0.25;
-	static float I_factor = 0.1;
+	static float P_factor = 0.5;
+	static float I_factor = 0.25;
+	static float heading_factor = 0.9;
 
 	float error[2];
 	static float integral[2];
@@ -184,7 +185,7 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 	//set the artificial WP
 	if(time_offset>=deltaT){
 
-		present_WP_heading=present_WP_heading+wRate*time_offset;
+		present_WP_heading=present_WP_heading+wRate*time_offset*heading_factor;
 
 		present_WP_position[0] = present_WP_position[0]+dist*quick_trig_cos(present_heading);
 		present_WP_position[1] = present_WP_position[1]+dist*quick_trig_sin(present_heading);
@@ -193,13 +194,17 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
 		update = true;
 		control = true;
+
+		//reset the integral
+		integral[0]=0;
+		integral[1]=0;
 	}
 
-	//cascade PID control                                   only P for now
+	//cascade PID control
 	time_offset_control = time_actual - timeControl;
 	if(time_offset_control>10 || control){
 		for(i=0;i<2;i++){
-			error[i]=abs((present_position[i]-track_following->position_estimator->local_position.pos[i]));
+			error[i]=(present_WP_position[i]-track_following->position_estimator->local_position.pos[i]);
 			integral[i]=integral[i]+error[i]*((float)time_offset_control);
 			present_WP_position_control[i]=present_WP_position[i]+P_factor*error[i]+I_factor*integral[i];
 		}

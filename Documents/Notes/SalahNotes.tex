@@ -15,7 +15,7 @@
 \begin{document}
 
 \title{Kalman approach for position prediction in an undersampled tracking problem}
-\author{Wernher von Braun}
+\author{Salah-Eddine Missri}
 \date{\today}
 \maketitle
 
@@ -110,28 +110,14 @@ Where $x$, $y$, $\theta$ are the positions and angle that define an object in a 
 Refering to classical mechanics equations, position and velocity should allow us to predict the system's behaviour.
 
 \subsection{Measurement considerations}
-The measurement $z$ is considered to be the data received from the other quadrotor. This mainly contains positions, velocities and heading
+The measurement $z$ is considered to be the data received from the other quadrotor. This mainly contains positions and velocities
 \begin{equation}
 \mathbf{z} =
     \begin{pmatrix}
         x\\
         y\\
-        \theta\\
         \dot{x}\\
         \dot{y}\\
-    \end{pmatrix}
-\end{equation}
-To get the angular velocity $\dot{\theta}$ for the state, we would need to keep the precedent heading $\theta_{k-1}$.
-So we can make the measurement vector
-\begin{equation}
-\mathbf{z_k} =
-    \begin{pmatrix}
-        x_k\\
-        y_k\\
-        \theta_k\\
-        \dot{x}_k\\
-        \dot{y}_k\\
-        \theta_{k-1}
     \end{pmatrix}
 \end{equation}
 
@@ -139,22 +125,18 @@ Then, state space and measurement space can be linked through a design matrix $\
 \begin{equation}
 \mathbf{H^{-1}} =
     \begin{pmatrix}
-        1 & 0 & 0 & 0 & 0 & 0 \\
-        0 & 1 & 0 & 0 & 0 & 0 \\
-        0 & 0 & 1 & 0 & 0 & 0 \\
-        0 & 0 & 0 & 1 & 0 & 0 \\
-        0 & 0 & 0 & 0 & 1 & 0 \\
-        0 & 0 & \frac{1}{\Delta{t}} & 0 & 0 & -\frac{1}{\Delta{t}} \\
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        0 & 0 & 1 & 0 \\
+        0 & 0 & 0 & 1 \\
     \end{pmatrix}
 \iff
 \mathbf{H} =
     \begin{pmatrix}
-        1 & 0 & 0 & 0 & 0 & 0 \\
-        0 & 1 & 0 & 0 & 0 & 0 \\
-        0 & 0 & 1 & 0 & 0 & 0 \\
-        0 & 0 & 0 & 1 & 0 & 0 \\
-        0 & 0 & 0 & 0 & 1 & 0 \\
-        0 & 0 & 1 & 0 & 0 & -\Delta{t} \\
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        0 & 0 & 1 & 0 \\
+        0 & 0 & 0 & 1 \\
     \end{pmatrix}
 \end{equation}
 With $\Delta{t}$ the time step at which the loop is ran.
@@ -172,8 +154,7 @@ Between two measurements, we have to solve a simple differential equation to ext
 \left\{
     \begin{array}{l}
     x_k = x_{k-1} + \dot{x}_{k-1}\Delta{t} \\
-    y_k = y_{k-1} + \dot{y}_{k-1}\Delta{t} \\
-    \theta_k = \theta_{k-1} + \dot{\theta}_{k-1}\Delta{t}
+    y_k = y_{k-1} + \dot{y}_{k-1}\Delta{t}
     \end{array}
 \right.
 \end{equation}
@@ -182,12 +163,10 @@ Therefore, state propagation $\mathbf{F}$ would be
 \begin{equation}
 \mathbf{F} =
     \begin{pmatrix}
-        1 & 0 & 0 & \Delta{t} & 0 & 0 \\
-        0 & 1 & 0 & 0 & \Delta{t} & 0 \\
-        0 & 0 & 1 & 0 & 0 & \Delta{t} \\
-        0 & 0 & 0 & 1 & 0 & 0 \\
-        0 & 0 & 0 & 0 & 1 & 0 \\
-        0 & 0 & 0 & 0 & 0 & 1 \\
+        1 & 0 & \Delta{t} & 0 \\
+        0 & 1 & 0 & \Delta{t} \\
+        0 & 0 & 1 & 0 \\
+        0 & 0 & 0 & 1 \\
     \end{pmatrix}
 \end{equation}
 
@@ -199,9 +178,7 @@ To fit $\sim 99.9\%$ of the case, we consider that the maximal acceleration case
 \left\{
     \begin{array}{l}
     4 \sigma_x = \frac{1}{2} \ddot{x}_{max} \Delta{t}^2 \\
-    4 \sigma_{\theta} = \frac{1}{2} \ddot{\theta}_{max} \Delta{t}^2 \\
     4 \sigma_{\dot{x}} = \ddot{x}_{max} \Delta{t} \\
-    4 \sigma_{\dot{\theta}} = \ddot{\theta}_{max} \Delta{t} \\
     \end{array}
 \right.
 \Leftrightarrow
@@ -221,27 +198,23 @@ The resulting state propagation error matrix is given by
 \mathbf{Q}
     & =
     \begin{pmatrix}
-        \sigma_x & 0 & 0 & 0 & 0 & 0 \\
-        0 & \sigma_x & 0 & 0 & 0 & 0 \\
-        0 & 0 & \sigma_{\theta} & 0 & 0 & 0 \\
-        0 & 0 & 0 & \sigma_{\dot{x}} & 0 & 0 \\
-        0 & 0 & 0 & 0 & \sigma_{\dot{x}} & 0 \\
-        0 & 0 & 0 & 0 & 0 & \sigma_{\dot{\theta}} \\
+        \sigma_x & 0 & 0 & 0 \\
+        0 & \sigma_x & 0 & 0 \\
+        0 & 0 & \sigma_{\dot{x}} & 0 \\
+        0 & 0 & 0 & \sigma_{\dot{x}} \\
     \end{pmatrix}
     \\
     & =
     \begin{pmatrix}
-        \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 & 0 & 0 & 0 & 0 & 0 \\
-        0 & \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 & 0 & 0 & 0 & 0 \\
-        0 & 0 & \frac{1}{8} \ddot{\theta}_{max} \Delta{t}^2 & 0 & 0 & 0 \\
-        0 & 0 & 0 & \frac{1}{4} \ddot{x}_{max} \Delta{t} & 0 & 0 \\
-        0 & 0 & 0 & 0 & \frac{1}{4} \ddot{x}_{max} \Delta{t} & 0 \\
-        0 & 0 & 0 & 0 & 0 & \frac{1}{4} \ddot{\theta}_{max} \Delta{t} \\
+        \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 & 0 & 0 & 0 & \\
+        0 & \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 & 0 & 0 & \\
+        0 & 0 & 0 & \frac{1}{4} \ddot{x}_{max} \Delta{t} & 0 \\
+        0 & 0 & 0 & 0 & \frac{1}{4} \ddot{x}_{max} \Delta{t} \\
     \end{pmatrix}
     \\
 \end{split}
 \end{equation}
-To set this, we only need two parameters: $\ddot{x}_{max}$ and $\ddot{\theta}_{max}$.
+To set this, we only need one parameter: $\ddot{x}_{max}$.
 
 
 \section{Implementation}

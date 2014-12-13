@@ -49,6 +49,56 @@
 #include "maths.h"
 #include "time_keeper.h"
 
+pid_controller_t track_following_pid_x =
+{
+	.p_gain = 2.0f,
+	.clip_min = 0.0f,
+	.clip_max = 3.0f,
+	.integrator={
+		.pregain = 0.5f,
+		.postgain = 0.0f,
+		.accumulator = 0.0f,
+		.maths_clip = 0.65f,
+		.leakiness = 0.0f
+	},
+	.differentiator={
+		.gain = 0.4f,
+		.previous = 0.0f,
+		.LPF = 0.5f,
+		.maths_clip = 0.65f
+	},
+	.output = 0.0f,
+	.error = 0.0f,
+	.last_update = 0.0f,
+	.dt = 1,
+	.soft_zone_width = 0.0f
+};
+
+pid_controller_t track_following_pid_y =
+{
+	.p_gain = 2.0f,
+	.clip_min = 0.0f,
+	.clip_max = 3.0f,
+	.integrator={
+		.pregain = 0.5f,
+		.postgain = 0.0f,
+		.accumulator = 0.0f,
+		.maths_clip = 0.65f,
+		.leakiness = 0.0f
+	},
+	.differentiator={
+		.gain = 0.4f,
+		.previous = 0.0f,
+		.LPF = 0.5f,
+		.maths_clip = 0.65f
+	},
+	.output = 0.0f,
+	.error = 0.0f,
+	.last_update = 0.0f,
+	.dt = 1,
+	.soft_zone_width = 0.0f
+};
+
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
 	track_following->waypoint_handler = waypoint_handler;
@@ -109,18 +159,18 @@ void track_following_linear_strategy(track_following_t* track_following)
 // Implement PID for the waypoint following
 void track_following_WP_control_PID(track_following_t* track_following)
 {
-	float KP = 2;
 	float error = 0;
-	// float offset = 0;
+	float offset = 0;
 	
-	
+	/*
+	float KP = 2;
 	for(int i=0;i<2; i++)
 	{
 		error = track_following_WP_distance_XYZ(track_following,i);
 		track_following->waypoint_handler->waypoint_following.pos[i] += KP*error;
 	}
+	*/
 	
-	/*
 	int i = 0;
 	error = track_following_WP_distance_XYZ(track_following, i);
 	offset = pid_control_update(&track_following_pid_x, error); // TODO: possible to use the _dt function
@@ -130,7 +180,6 @@ void track_following_WP_control_PID(track_following_t* track_following)
 	error = track_following_WP_distance_XYZ(track_following, i);
 	offset = pid_control_update(&track_following_pid_y, error); // TODO: possible to use the _dt function
 	track_following->waypoint_handler->waypoint_following.pos[i] += offset;
-	*/
 }							
 							
 							// FUNCTIONS //

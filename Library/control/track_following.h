@@ -61,58 +61,6 @@ typedef struct
 	position_estimator_t* position_estimator;				///< The pointer to the position estimation structure
 }track_following_t;
 
-/*
-static pid_controller_t track_following_pid_x =
-{
-	.p_gain = 1.0f,
-	.clip_min = 0.0f,
-	.clip_max = 3.0f,
-	.integrator={
-		.pregain = 0.5f,
-		.postgain = 0.0f,
-		.accumulator = 0.0f,
-		.maths_clip = 0.65f,
-		.leakiness = 0.0f
-	},
-	.differentiator={
-		.gain = 0.4f,
-		.previous = 0.0f,
-		.LPF = 0.5f,
-		.maths_clip = 0.65f
-	},
-	.output = 0.0f,
-	.error = 0.0f,
-	.last_update = 0.0f,
-	.dt = 1,
-	.soft_zone_width = 0.0f
-}; 
-
-static pid_controller_t track_following_pid_y =
-{
-	.p_gain = 1.0f,
-	.clip_min = 0.0f,
-	.clip_max = 3.0f,
-	.integrator={
-		.pregain = 0.5f,
-		.postgain = 0.0f,
-		.accumulator = 0.0f,
-		.maths_clip = 0.65f,
-		.leakiness = 0.0f
-	},
-	.differentiator={
-		.gain = 0.4f,
-		.previous = 0.0f,
-		.LPF = 0.5f,
-		.maths_clip = 0.65f
-	},
-	.output = 0.0f,
-	.error = 0.0f,
-	.last_update = 0.0f,
-	.dt = 1,
-	.soft_zone_width = 0.0f
-};
-*/
-
 /**
  * \brief	Initialisation of the track following module
  *

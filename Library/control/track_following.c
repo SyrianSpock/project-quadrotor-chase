@@ -34,6 +34,10 @@
  * 
  * \author MAV'RIC Team
  * \author Nicolas Dousse
+ * \author Jonathan Arreguit
+ * \author Dorian Konrad
+ * \author Salah Missri
+ * \author David Tauxe
  *   
  * \brief This file implements a strategy to follow a GPS track
  *
@@ -83,7 +87,7 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 // LINEAR STRATEGY
 void track_following_linear_strategy(track_following_t* track_following)
 {
-	uint32_t time_offset = time_last_WP_ms(track_following);
+	uint32_t time_offset = track_following_WP_time_last_ms(track_following);
 	
 	float position_offset = 0;
 	
@@ -97,29 +101,42 @@ void track_following_linear_strategy(track_following_t* track_following)
 				+ position_offset;
 	}
 	// track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
-	control_WP_PID(track_following);
+	track_following_WP_control_PID(track_following);
 }
 							
 							// CONTROL //
 
 // Implement PID for the waypoint following
-void control_WP_PID(track_following_t* track_following)
+void track_following_WP_control_PID(track_following_t* track_following)
 {
-	float KP = 1;
+	float KP = 2;
 	float error = 0;
+	// float offset = 0;
+	
 	
 	for(int i=0;i<2; i++)
 	{
-		error = distance_WP_XYZ(track_following,i);
-		track_following->waypoint_handler->waypoint_following.pos[i] = track_following->position_estimator->local_position.pos[i]
-																	+ KP*error;
+		error = track_following_WP_distance_XYZ(track_following,i);
+		track_following->waypoint_handler->waypoint_following.pos[i] += KP*error;
 	}
+	
+	/*
+	int i = 0;
+	error = track_following_WP_distance_XYZ(track_following, i);
+	offset = pid_control_update(&track_following_pid_x, error); // TODO: possible to use the _dt function
+	track_following->waypoint_handler->waypoint_following.pos[i] += offset;
+	
+	i = 1;
+	error = track_following_WP_distance_XYZ(track_following, i);
+	offset = pid_control_update(&track_following_pid_y, error); // TODO: possible to use the _dt function
+	track_following->waypoint_handler->waypoint_following.pos[i] += offset;
+	*/
 }							
 							
 							// FUNCTIONS //
 							
 // time_last_WP_ms: Time since last waypoint was received
-uint32_t time_last_WP_ms(track_following_t* track_following)
+uint32_t track_following_WP_time_last_ms(track_following_t* track_following)
 {
 	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
 	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
@@ -129,7 +146,7 @@ uint32_t time_last_WP_ms(track_following_t* track_following)
 }
 
 // calculate distance to waypoint according to an axis
-float distance_WP_XYZ(track_following_t* track_following, int i)
+float track_following_WP_distance_XYZ(track_following_t* track_following, int i)
 {
 	float distance = track_following->waypoint_handler->waypoint_following.pos[i]
 					- track_following->position_estimator->local_position.pos[i];

@@ -51,6 +51,7 @@ extern "C" {
 #include "neighbor_selection.h"
 #include "position_estimation.h"
 #include "mavlink_stream.h"
+#include "pid_control.h"
 
 typedef struct
 {
@@ -58,8 +59,59 @@ typedef struct
 	mavlink_waypoint_handler_t* waypoint_handler;			///< The pointer to the waypoint handler
 	neighbors_t* neighbors;									///< The pointer to the neighbor structure
 	position_estimator_t* position_estimator;				///< The pointer to the position estimation structure
-}track_following_t; 
+}track_following_t;
 
+/*
+static pid_controller_t track_following_pid_x =
+{
+	.p_gain = 1.0f,
+	.clip_min = 0.0f,
+	.clip_max = 3.0f,
+	.integrator={
+		.pregain = 0.5f,
+		.postgain = 0.0f,
+		.accumulator = 0.0f,
+		.maths_clip = 0.65f,
+		.leakiness = 0.0f
+	},
+	.differentiator={
+		.gain = 0.4f,
+		.previous = 0.0f,
+		.LPF = 0.5f,
+		.maths_clip = 0.65f
+	},
+	.output = 0.0f,
+	.error = 0.0f,
+	.last_update = 0.0f,
+	.dt = 1,
+	.soft_zone_width = 0.0f
+}; 
+
+static pid_controller_t track_following_pid_y =
+{
+	.p_gain = 1.0f,
+	.clip_min = 0.0f,
+	.clip_max = 3.0f,
+	.integrator={
+		.pregain = 0.5f,
+		.postgain = 0.0f,
+		.accumulator = 0.0f,
+		.maths_clip = 0.65f,
+		.leakiness = 0.0f
+	},
+	.differentiator={
+		.gain = 0.4f,
+		.previous = 0.0f,
+		.LPF = 0.5f,
+		.maths_clip = 0.65f
+	},
+	.output = 0.0f,
+	.error = 0.0f,
+	.last_update = 0.0f,
+	.dt = 1,
+	.soft_zone_width = 0.0f
+};
+*/
 
 /**
  * \brief	Initialisation of the track following module
@@ -93,13 +145,13 @@ void track_following_linear_strategy(track_following_t* track_following);
 
 							// CONTROL //
 
-void control_WP_PID(track_following_t* track_following);
+void track_following_WP_control_PID(track_following_t* track_following);
 
 							// FUNCTIONS //
 
-uint32_t time_last_WP_ms(track_following_t* track_following);
+uint32_t track_following_WP_time_last_ms(track_following_t* track_following);
 
-float distance_WP_XYZ(track_following_t* track_following, int i);
+float track_following_WP_distance_XYZ(track_following_t* track_following, int i);
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg);
 

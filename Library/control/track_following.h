@@ -89,6 +89,25 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg);
 
+
+//fonction perso
+
+void start_init(track_following_t* track_following,float* past_position, float* present_position, float* past_velocity, float* present_velocity, float* present_WP_position);
+
+void check_new_message(track_following_t* track_following,float* present_position, float* present_WP_position,float* past_position,float* past_velocity,float* present_velocity,int* update);
+
+void recalcul_speed(float* past_speed,float* present_speed,float* present_velocity, float* past_velocity, float* past_heading,float* present_heading,float* present_WP_heading,float* dist,float* wRate, uint32_t deltaT);
+
+uint32_t set_artificial_waypoint(float present_WP_heading, float* present_WP_position, float* present_WP_position_control,float present_speed, float time_offset, float heading_factor, float wRate);
+
+uint32_t PID_waypoin_control(track_following_t* track_following, float* present_WP_position, float* present_WP_position_control, uint32_t time_offset_control, float P_factor, float I_factor, float D_factor, float* integral);
+
+void send_update_waypoint (float* waypoint_pos, track_following_t* track_following);
+
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

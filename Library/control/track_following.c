@@ -80,12 +80,7 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
 	static Bool start = true;
 
-	static Bool recalculSpeeds = true;
-
-	static Bool update = true;
-
-
-	int16_t i;
+	static int update = 1;
 
 	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
 	static uint32_t timeArtificialWP; // Last artificial waypoint time in ms
@@ -119,120 +114,55 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 	static float I_factor = 0.25;
 	static float D_factor = 1;
 	static float heading_factor = 0.25;
-
-	float error[2]={0,0};
-	static float past_error[2]={0,0};
 	
 	static float integral[2];
-	static float derivate[2];
 
 	uint32_t deltaT = 100; //deltaT in ms//see what happens with different values...
 
 
 
 	if(start){
-		for(i=0;i<3;++i){
-			past_position[i] = track_following->neighbors->neighbors_list[0].position[i];
-			past_velocity[i] = track_following->neighbors->neighbors_list[0].velocity[i];
-			present_position[i] = track_following->neighbors->neighbors_list[0].position[i];
-			present_velocity[i] = track_following->neighbors->neighbors_list[0].velocity[i];
-			present_WP_position[i] = present_position[i];
-		}
-		timeArtificialWP=time_actual;
-		timeControl=time_actual;
+		start_init(track_following,past_position,present_position,past_velocity,present_velocity,present_WP_position);
+		
+		timeControl=time_keeper_get_millis();
 		start=false;
 	}
 
-
+	
+	
 	//check for new position and speed coming from the other quad
-	for(i=0;i<3;++i){
-		if(present_position[i] != track_following->neighbors->neighbors_list[0].position[i]){
-			past_position[i]=present_position[i];
-			present_position[i] =track_following->neighbors->neighbors_list[0].position[i];
-
-			present_WP_position[i]=present_position[i];
-			update=true;
-			
-		}
-
-		if(past_velocity[i] != track_following->neighbors->neighbors_list[0].velocity[i]){
-			past_velocity[i]=present_velocity[i];
-			present_velocity[i]=track_following->neighbors->neighbors_list[0].velocity[i];
-			
-			recalculSpeeds=true;
-			update=true;
-		}
-	}
+	check_new_message(track_following, present_position, present_WP_position, past_position, past_velocity, present_velocity,&update);
 
 
-
-	if(recalculSpeeds){
-		past_speed=present_speed;
-		present_speed=maths_fast_sqrt((present_velocity[0]*present_velocity[0])+(present_velocity[1]*present_velocity[1]));
-
-		past_heading=present_heading;
-
-		if(present_speed==0)
-			present_heading = 0;
-		else if(past_velocity[1]>=0)
-			present_heading = quick_trig_acos(present_velocity[0]/present_speed);
-		else if(past_velocity[1]<0)
-			present_heading = -(quick_trig_acos(present_velocity[0]/present_speed));
+	//update the speeds values
+	if(update==1)
+		recalcul_speed(&past_speed, &present_speed, present_velocity, past_velocity, &past_heading, &present_heading,&present_WP_heading, &dist, &wRate, deltaT);
+	
 
 
-		dist=present_speed*deltaT/1000.0f;
-		wRate=(present_heading-past_heading)/4000.0f;
-
-		recalculSpeeds=false;
-	}
-
-
+	
+	//set the artificial WP
 	time_offset = time_actual - timeArtificialWP;
 
-	//set the artificial WP
-	if(time_offset>=deltaT||update){
+	if(time_offset>=deltaT||update==1){
 
-		present_WP_heading=present_WP_heading+wRate*time_offset*heading_factor;
+		timeArtificialWP=set_artificial_waypoint(present_WP_heading, present_WP_position, present_WP_position_control, present_speed, time_offset, heading_factor, wRate);
 
-		present_WP_position[0] = present_WP_position[0]+((present_speed*time_offset)/1000.0f)*quick_trig_cos(present_heading);
-		present_WP_position[1] = present_WP_position[1]+((present_speed*time_offset)/1000.0f)*quick_trig_sin(present_heading);
-		present_WP_position[2] = present_WP_position[2]; //Assume constant altitude
-		present_WP_position_control[2] = present_WP_position[2];
-
-		update = true;
+		update =0;
 
 		//reset the integral
 		integral[0]=0;
-		integral[1]=0;
-		
+		integral[1]=0;	
 	}
+
 
 	//cascade PID control
 	time_offset_control = time_actual - timeControl;
+	timeControl = PID_waypoin_control(track_following, present_WP_position, present_WP_position_control, time_offset_control, P_factor, I_factor, D_factor, integral);
 	
-	for(i=0;i<2;i++){
-		past_error[i]=error[i];
-		error[i]=(present_WP_position[i]-track_following->position_estimator->local_position.pos[i]);
-		integral[i]=integral[i]+error[i]*((float)time_offset_control);
-		if(time_offset_control!=0)
-			derivate[i]=(error[i]-past_error[i])/((float)time_offset_control);
-			
-		else if(time_offset_control==0)
-			derivate[i]=0;
-			
-		present_WP_position_control[i]=present_WP_position[i]+P_factor*error[i]+I_factor*integral[i]+D_factor*derivate[i];
-	}
-	timeControl=time_keeper_get_millis();
 	
-
 	//send the WP
-
-	if(update){
-		for(i=0;i<3;++i)
-			track_following->waypoint_handler->waypoint_following.pos[i] = present_WP_position_control[i];
-
-		timeArtificialWP=time_keeper_get_millis();
-		update = false;
+	send_update_waypoint(present_WP_position_control,track_following);
 
 
 		/*for(i=0;i<3;i++)
@@ -240,7 +170,7 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
 		dist2WP = maths_fast_sqrt(dist2WP);
 		track_following->dist2following = dist2WP;*/
-	}
+	//}
 }
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
@@ -251,4 +181,104 @@ void track_following_send_dist(const track_following_t* track_following, const m
 										time_keeper_get_millis(),
 										"dist2follow",
 										track_following->dist2following);
+}
+
+void start_init(track_following_t* track_following,float* past_position, float* present_position, float* past_velocity, float* present_velocity, float* present_WP_position)
+{
+	for(int i=0;i<3;++i){
+		past_position[i] = track_following->neighbors->neighbors_list[0].position[i];
+		past_velocity[i] = track_following->neighbors->neighbors_list[0].velocity[i];
+		present_position[i] = track_following->neighbors->neighbors_list[0].position[i];
+		present_velocity[i] = track_following->neighbors->neighbors_list[0].velocity[i];
+		present_WP_position[i] = present_position[i];
+	}
+}
+
+
+void check_new_message(track_following_t* track_following, float* present_position, float* present_WP_position,float* past_position,float* past_velocity,float* present_velocity,int* update)
+{
+
+	for(int i=0;i<3;++i){
+		if(present_position[i] != track_following->neighbors->neighbors_list[0].position[i]){
+			past_position[i]=present_position[i];
+			present_position[i] =track_following->neighbors->neighbors_list[0].position[i];
+			
+			present_WP_position[i]=present_position[i];
+
+			*update=1;
+			
+		}
+
+		if(past_velocity[i] != track_following->neighbors->neighbors_list[0].velocity[i]){
+			past_velocity[i]=present_velocity[i];
+			present_velocity[i]=track_following->neighbors->neighbors_list[0].velocity[i];
+			
+			*update=1;
+		}
+	}
+}
+
+void recalcul_speed(float* past_speed,float* present_speed,float* present_velocity, float* past_velocity,float* past_heading, float* present_heading, float* present_WP_heading, float* dist,float* wRate, uint32_t deltaT)
+{
+	*past_speed=*present_speed;
+	*present_speed=maths_fast_sqrt((present_velocity[0]*present_velocity[0])+(present_velocity[1]*present_velocity[1]));
+
+	*past_heading=*present_heading;
+
+	if(*present_speed==0)
+		*present_heading = 0;
+	else if(past_velocity[1]>=0)
+		*present_heading = quick_trig_acos(present_velocity[0]/ *present_speed);
+	else if(past_velocity[1]<0)
+		*present_heading = -(quick_trig_acos(present_velocity[0]/ *present_speed));
+
+	*present_WP_heading=*present_heading;
+	*dist=* present_speed*deltaT/1000.0f;
+	*wRate=(*present_heading-*past_heading)/4000.0f;
+
+}
+
+
+uint32_t set_artificial_waypoint(float present_WP_heading, float* present_WP_position, float* present_WP_position_control,float present_speed, float time_offset, float heading_factor, float wRate)
+{
+	present_WP_heading=present_WP_heading+wRate*time_offset*heading_factor;
+
+	present_WP_position[0] = present_WP_position[0]+((present_speed*time_offset)/1000.0f)*quick_trig_cos(present_WP_heading);
+	present_WP_position[1] = present_WP_position[1]+((present_speed*time_offset)/1000.0f)*quick_trig_sin(present_WP_heading);
+	present_WP_position[2] = present_WP_position[2]; //Assume constant altitude
+	
+	present_WP_position_control[2] = present_WP_position[2];
+	
+	return (time_keeper_get_millis());
+
+}
+
+uint32_t PID_waypoin_control(track_following_t* track_following, float* present_WP_position, float* present_WP_position_control, uint32_t time_offset_control, float P_factor, float I_factor, float D_factor, float* integral)
+{
+	static float error[2]={0,0};
+	static float past_error[2]={0,0};
+	static float derivate[2];
+	for(int i=0;i<2;i++){
+		
+		past_error[i]=error[i];
+		error[i]=(present_WP_position[i]-track_following->position_estimator->local_position.pos[i]);
+		integral[i]=integral[i]+error[i]*((float)time_offset_control);
+		
+		if(time_offset_control!=0)
+			derivate[i]=(error[i]-past_error[i])/((float)time_offset_control);
+		
+		else if(time_offset_control==0)
+			derivate[i]=0;
+		
+		present_WP_position_control[i]=present_WP_position[i]+P_factor*error[i]+I_factor*integral[i]+D_factor*derivate[i];
+	}
+	
+	return (time_keeper_get_millis());
+	
+}
+
+void send_update_waypoint (float* waypoint_pos, track_following_t* track_following)
+{
+	for(int i=0;i<3;++i)
+		track_following->waypoint_handler->waypoint_following.pos[i] = waypoint_pos[i];
 }

@@ -2,6 +2,7 @@
 \usepackage{times}
 \usepackage{mathtools}
 \usepackage[toc,page]{appendix}
+\usepackage[]{algorithm2e}
 
 \topmargin 0.0cm
 \oddsidemargin 0.2cm
@@ -27,7 +28,7 @@ Idea : Use a Kalman filter as a predictor, with the prediction loop running at a
 
 \subsection{Prediction steps}
 
-The first step is to predict the a priori state estimate.
+The first step is to predict the a priori state estimate
 \begin{equation}
 \hat{\mathbf{x}}_{k\mid k-1} = \mathbf{F}_{k}\hat{\mathbf{x}}_{k-1\mid k-1}
 \end{equation}
@@ -35,7 +36,7 @@ Where $\hat{\mathbf{x}}_{k\mid k-1}$ is the estimate of the state vector at iter
 $\mathbf{F}_{k}$ is the state propagation matrix for iteration $k$ and $\hat{\mathbf{x}}_{k-1\mid k-1}$ is the estimate of the state vector at iteration $k-1$, with iteration $k-1$ included.
 Notice that in our case, the command $u$ is modeled as noise that's why it's absent from the equation.
 
-The second step of the prediction is to predict the a priori estimate covariance.
+The second step is to predict the a priori estimate covariance
 \begin{equation}
 \mathbf{P}_{k\mid k-1} = \mathbf{F}_{k} \mathbf{P}_{k-1\mid k-1} \mathbf{F}_{k}^{\text{T}} + \mathbf{Q}_{k}
 \end{equation}
@@ -44,7 +45,7 @@ $\mathbf{Q}_{k}$ is the process covariance matrix (aka state propagation estimat
 
 \subsection{Update steps}
 
-In order to compute the optimal Kalman gain $\mathbf{K}_k$, we first need to compute the measurement residual $\tilde{\mathbf{y}}_k$ and the residual covariance $\mathbf{S}_k$.
+In order to compute the optimal Kalman gain $\mathbf{K}_k$, we first need to compute the measurement residual $\tilde{\mathbf{y}}_k$ and the residual covariance $\mathbf{S}_k$
 \begin{equation}
 \tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k\hat{\mathbf{x}}_{k\mid k-1}
 \end{equation}
@@ -58,7 +59,7 @@ Where $\mathbf{z}_k$ is the measurement.
 $\mathbf{H}_k$ is the design matrix that maps the state $\mathbf{x}$ into the measurement space and is defined such that $\mathbf{z} = \mathbf{H}\mathbf{x}$.
 $\mathbf{R}_k$ is the measurement covariance matrix
 
-The last two equations can be compressed into a more compact equation.
+The last two equations can be compressed into a more compact equation
 \begin{equation}
 \mathbf{K}_k = \mathbf{P}_{k\mid k-1}\mathbf{H}_k^T (\mathbf{H}_k \mathbf{P}_{k\mid k-1} \mathbf{H}_k^T + \mathbf{R}_k)^{-1}
 \end{equation}
@@ -93,7 +94,7 @@ By definition, the state of a deterministic dynamic system is the smallest vecto
 Therefore, knowledge of the state should allow theoretically to predict the future outputs of the deterministic system.
 
 Our quadrotor tracking problem can be simplified into a $2D$ position prediction problem.
-So we can take as state:
+So we can take as state
 \begin{equation}
 \mathbf{x} =
     \begin{pmatrix}
@@ -109,7 +110,7 @@ Where $x$, $y$, $\theta$ are the positions and angle that define an object in a 
 Refering to classical mechanics equations, position and velocity should allow us to predict the system's behaviour.
 
 \subsection{Measurement considerations}
-The measurement $z$ is considered to be the data received from the other quadrotor. This mainly contains positions, velocities and heading.
+The measurement $z$ is considered to be the data received from the other quadrotor. This mainly contains positions, velocities and heading
 \begin{equation}
 \mathbf{z} =
     \begin{pmatrix}
@@ -121,7 +122,7 @@ The measurement $z$ is considered to be the data received from the other quadrot
     \end{pmatrix}
 \end{equation}
 To get the angular velocity $\dot{\theta}$ for the state, we would need to keep the precedent heading $\theta_{k-1}$.
-So we can make the measurement vector be
+So we can make the measurement vector
 \begin{equation}
 \mathbf{z_k} =
     \begin{pmatrix}
@@ -172,7 +173,7 @@ Between two measurements, we have to solve a simple differential equation to ext
     \begin{array}{l}
     x_k = x_{k-1} + \dot{x}_{k-1}\Delta{t} \\
     y_k = y_{k-1} + \dot{y}_{k-1}\Delta{t} \\
-    \theta_k = x_{k-1} + \dot{\theta}_{k-1}\Delta{t}
+    \theta_k = \theta_{k-1} + \dot{\theta}_{k-1}\Delta{t}
     \end{array}
 \right.
 \end{equation}
@@ -244,6 +245,26 @@ To set this, we only need two parameters: $\ddot{x}_{max}$ and $\ddot{\theta}_{m
 
 
 \section{Implementation}
+
+\begin{algorithm}[H]
+ initialisation\;
+
+ \While{true}{
+  %// prediction loop\;
+  compute the a priori state estimate\;
+  compute the a priori estimate covariance\;
+  %// correction (update) loop\;
+  \eIf{new measurement taken}{
+   compute optimal Kalman gain\;
+   correct the a posteriori state estimate\;
+   correct the a posteriori estimate covariance\;
+   }{
+   go on\;
+   }
+  return current state\;
+ }
+ \caption{Pseudocode for Kalman predictor implementation}
+\end{algorithm}
 
 \section{Results \& Discussion}
 

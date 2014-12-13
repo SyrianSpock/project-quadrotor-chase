@@ -23,8 +23,8 @@ uint8_t kalman_init(
 	}
 	*state_estimate_covariance = zero_4x4;
 
-    float sigma_x = 0.125 * max_acc * delta_t * delta_t;
-    float sigma_v = 0.25 * max_acc * delta_t;
+    float sigma_x = 0.015625 * max_acc*max_acc * delta_t*delta_t*delta_t*delta_t;
+    float sigma_v = 0.0625 * max_acc*max_acc * delta_t*delta_t;
 	vector_4_t process_noise_variance = {.v={sigma_x, sigma_x, sigma_v, sigma_v}};
 	*process_noise_covariance = diag_4x4(process_noise_variance);
 

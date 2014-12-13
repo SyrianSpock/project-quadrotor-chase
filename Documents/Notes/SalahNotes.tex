@@ -198,18 +198,18 @@ The resulting state propagation error matrix is given by
 \mathbf{Q}
     & =
     \begin{pmatrix}
-        \sigma_x & 0 & 0 & 0 \\
-        0 & \sigma_x & 0 & 0 \\
-        0 & 0 & \sigma_{\dot{x}} & 0 \\
-        0 & 0 & 0 & \sigma_{\dot{x}} \\
+        \sigma_x^2 & 0 & 0 & 0 \\
+        0 & \sigma_x^2 & 0 & 0 \\
+        0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
+        0 & 0 & 0 & \sigma_{\dot{x}}^2 \\
     \end{pmatrix}
     \\
     & =
     \begin{pmatrix}
-        \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 & 0 & 0 & 0 & \\
-        0 & \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 & 0 & 0 & \\
-        0 & 0 & 0 & \frac{1}{4} \ddot{x}_{max} \Delta{t} & 0 \\
-        0 & 0 & 0 & 0 & \frac{1}{4} \ddot{x}_{max} \Delta{t} \\
+        \frac{1}{64} \ddot{x}_{max}^2 \Delta{t}^4 & 0 & 0 & 0 \\
+        0 & \frac{1}{64} \ddot{x}_{max}^2 \Delta{t}^4 & 0 & 0 \\
+        0 & 0 & 0 & \frac{1}{16} \ddot{x}_{max}^2 \Delta{t}^2 & 0 \\
+        0 & 0 & 0 & 0 & \frac{1}{16} \ddot{x}_{max}^2 \Delta{t}^2 \\
     \end{pmatrix}
     \\
 \end{split}

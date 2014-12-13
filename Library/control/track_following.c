@@ -45,6 +45,7 @@
 #include "maths.h"
 #include "time_keeper.h"
 
+
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
 	track_following->waypoint_handler = waypoint_handler;
@@ -74,38 +75,67 @@ void track_following_get_waypoint(track_following_t* track_following)
 
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
-    // Kalman predictor
-    vector_4_t state_estimate;
-    matrix_4x4_t state_estimate_covariance;
-    matrix_4x4_t process_noise_covariance;
-    matrix_4x4_t design_matrix;
-    matrix_4x4_t process_noise_covariance;
+    // Kalman predictor variables
+    static vector_4_t state_estimate;
+    static matrix_4x4_t state_estimate_covariance;
+    static matrix_4x4_t process_noise_covariance;
+    static matrix_4x4_t design_matrix;
+    static matrix_4x4_t process_noise_covariance;
+    static vector_4_t last_measurement;
 
-    float max_acc,
-    float delta_t;
+    static float max_acc = 10.0f;
+    static float delta_t = 0.0f;
+    static uint32_t last_time_in_loop = 0;
 
-    vector_4_t last_measurement;
+    // Update time tracker & delta_t
+    delta_t = (time_keeper_get_millis() - last_time_in_loop) / 1000.0f;
+    last_time_in_loop = time_keeper_get_millis();
 
+    // Flag to signal the disponibility of a new measurement
+    static bool new_measurement_received = TRUE;
+    static uint32_t last_measurement_time = 0;
 
-    kalman_init(
-        &state_estimate,
-        &state_estimate_covariance,
-        &process_noise_covariance,
-        &design_matrix,
-        max_acc,
-        delta_t);
+    // Check if a new measurement has been received & set flag accordingly
+    if(track_following->neighbors->neighbors_list[0].time_msg_received != last_measurement_time) {
+        new_measurement_received = TRUE;
+        last_measurement_time = track_following->neighbors->neighbors_list[0].time_msg_received;
+    }
+    else {
+        new_measurement_received = FALSE;
+    }
 
+    // Initialise Kalman parameters once, and only once
+    static bool kalman_init_done = FALSE;
+
+    if(!kalman_init_done) {
+        kalman_init(
+            &state_estimate,
+            &state_estimate_covariance,
+            &process_noise_covariance,
+            &design_matrix,
+            max_acc,
+            delta_t);
+        kalman_init_done = TRUE;
+    }
+
+    // Kalman predictor loop
     kalman_predict(
         &state_estimate,
         &state_estimate_covariance,
         process_noise_covariance,
         delta_t);
+    // Only correct the prediction if there is a new measurement
+    if(new_measurement_received) {
+        kalman_correct(
+            &state_estimate,
+            &state_estimate_covariance,
+            &last_measurement,
+            design_matrix);
+    }
 
-    kalman_correct(
-        &state_estimate,
-        &state_estimate_covariance,
-        &last_measurement,
-        design_matrix);
+    // Use Kalman prediction output as waypoint
+    track_following->waypoint_handler->waypoint_following.pos[0] = state_estimate.v[0];
+    track_following->waypoint_handler->waypoint_following.pos[1] = state_estimate.v[1];
 }
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)

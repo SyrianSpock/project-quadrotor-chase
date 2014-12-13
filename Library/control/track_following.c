@@ -43,61 +43,10 @@
  *
  ******************************************************************************/
 
-
 #include "track_following.h"
 #include "print_util.h"
 #include "maths.h"
 #include "time_keeper.h"
-
-pid_controller_t track_following_pid_x =
-{
-	.p_gain = 2.0f,
-	.clip_min = 0.0f,
-	.clip_max = 3.0f,
-	.integrator={
-		.pregain = 0.5f,
-		.postgain = 0.0f,
-		.accumulator = 0.0f,
-		.maths_clip = 0.65f,
-		.leakiness = 0.0f
-	},
-	.differentiator={
-		.gain = 0.4f,
-		.previous = 0.0f,
-		.LPF = 0.5f,
-		.maths_clip = 0.65f
-	},
-	.output = 0.0f,
-	.error = 0.0f,
-	.last_update = 0.0f,
-	.dt = 1,
-	.soft_zone_width = 0.0f
-};
-
-pid_controller_t track_following_pid_y =
-{
-	.p_gain = 2.0f,
-	.clip_min = 0.0f,
-	.clip_max = 3.0f,
-	.integrator={
-		.pregain = 0.5f,
-		.postgain = 0.0f,
-		.accumulator = 0.0f,
-		.maths_clip = 0.65f,
-		.leakiness = 0.0f
-	},
-	.differentiator={
-		.gain = 0.4f,
-		.previous = 0.0f,
-		.LPF = 0.5f,
-		.maths_clip = 0.65f
-	},
-	.output = 0.0f,
-	.error = 0.0f,
-	.last_update = 0.0f,
-	.dt = 1,
-	.soft_zone_width = 0.0f
-};
 
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)
 {
@@ -130,6 +79,7 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 {
 	// Write your code here
 	track_following_linear_strategy(track_following);
+	track_following_WP_control_PID(track_following);
 }
 
 							// PREDICTION //
@@ -138,20 +88,16 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 void track_following_linear_strategy(track_following_t* track_following)
 {
 	uint32_t time_offset = track_following_WP_time_last_ms(track_following);
-	
 	float position_offset = 0;
 	
 	for(int i=0;i<2;i++)
 	{
 		// velocity in m/s and time_offset in ms
 		position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*((float)time_offset)/1000.0f;
-		
-		track_following->waypoint_handler->waypoint_following.pos[i] =
-				track_following->neighbors->neighbors_list[0].position[i]
-				+ position_offset;
+		//position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*4; // Good results
+		track_following->waypoint_handler->waypoint_following.pos[i] = track_following->neighbors->neighbors_list[0].position[i] + position_offset;
 	}
 	// track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
-	track_following_WP_control_PID(track_following);
 }
 							
 							// CONTROL //
@@ -170,6 +116,56 @@ void track_following_WP_control_PID(track_following_t* track_following)
 		track_following->waypoint_handler->waypoint_following.pos[i] += KP*error;
 	}
 	*/
+	
+	static pid_controller_t track_following_pid_x =
+	{
+		.p_gain = 2.0f,
+		.clip_min = -100.0f,
+		.clip_max = 100.0f,
+		.integrator={
+			.pregain = 0.5f,
+			.postgain = 0.5f,
+			.accumulator = 0.0f,
+			.maths_clip = 20.0f,
+			.leakiness = 0.0f
+		},
+		.differentiator={
+			.gain = 0.1f,
+			.previous = 0.0f,
+			.LPF = 0.5f,
+			.maths_clip = 5.0f
+		},
+		.output = 0.0f,
+		.error = 0.0f,
+		.last_update = 0.0f,
+		.dt = 1,
+		.soft_zone_width = 0.0f
+	};
+
+	static pid_controller_t track_following_pid_y =
+	{
+		.p_gain = 2.0f,
+		.clip_min = -100.0f,
+		.clip_max = 100.0f,
+		.integrator={
+			.pregain = 0.5f,
+			.postgain = 0.5f,
+			.accumulator = 0.0f,
+			.maths_clip = 20.0f,
+			.leakiness = 0.0f
+		},
+		.differentiator={
+			.gain = 0.1f,
+			.previous = 0.0f,
+			.LPF = 0.5f,
+			.maths_clip = 5.0f
+		},
+		.output = 0.0f,
+		.error = 0.0f,
+		.last_update = 0.0f,
+		.dt = 1,
+		.soft_zone_width = 0.0f
+	};
 	
 	int i = 0;
 	error = track_following_WP_distance_XYZ(track_following, i);

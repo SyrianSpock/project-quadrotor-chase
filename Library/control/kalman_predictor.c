@@ -1,4 +1,5 @@
 #include "small_matrix.h"
+#include "kalman_predictor.h"
 
 uint8_t kalman_init(
             vector_4_t * state_estimate,
@@ -9,9 +10,9 @@ uint8_t kalman_init(
             const float delta_t)
 {
     // Make sure the input is set as expected
-    if(state_estimate == NULL
-        || state_estimate_covariance == NULL
-        || process_noise_covariance == NULL
+    if(state_estimate == NULL \
+        || state_estimate_covariance == NULL \
+        || process_noise_covariance == NULL \
         || design_matrix == NULL) {
         return 0;
     }
@@ -83,8 +84,8 @@ uint8_t kalman_correct(
             const matrix_4x4_t design_matrix)
 {
     // Make sure the input is set as expected
-    if(state_estimate == NULL
-       || state_estimate_covariance == NULL
+    if(state_estimate == NULL \
+       || state_estimate_covariance == NULL \
        || last_measurement == NULL) {
         return 0;
     }
@@ -126,13 +127,13 @@ uint8_t kalman_update_measurement(
     }
 
     // Get last waypoint data
-    last_measurement.v[0] =
+    last_measurement.v[0] = \
         track_following->neighbors->neighbors_list[0].position[0];
-    last_measurement.v[1] =
+    last_measurement.v[1] = \
         track_following->neighbors->neighbors_list[0].position[1];
-    last_measurement.v[2] =
+    last_measurement.v[2] = \
         track_following->neighbors->neighbors_list[0].velocity[0];
-    last_measurement.v[3] =
+    last_measurement.v[3] = \
         track_following->neighbors->neighbors_list[0].velocity[1];
 
     // Compute measurement residual according to new measurement

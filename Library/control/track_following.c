@@ -44,6 +44,8 @@
 #include "print_util.h"
 #include "maths.h"
 #include "time_keeper.h"
+#include "small_matrix.h"
+#include "kalman_predictor.h"
 
 
 void track_following_init(track_following_t* track_following, mavlink_waypoint_handler_t* waypoint_handler, neighbors_t* neighbors, position_estimator_t* position_estimator)

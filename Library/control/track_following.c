@@ -82,7 +82,6 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
     static matrix_4x4_t state_estimate_covariance;
     static matrix_4x4_t process_noise_covariance;
     static matrix_4x4_t design_matrix;
-    static matrix_4x4_t process_noise_covariance;
     static vector_4_t last_measurement;
 
     static float max_acc = 10.0f;
@@ -132,7 +131,8 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
             &state_estimate,
             &state_estimate_covariance,
             &last_measurement,
-            design_matrix);
+            design_matrix,
+			track_following);
     }
 
     // Use Kalman prediction output as waypoint

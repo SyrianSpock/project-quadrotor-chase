@@ -80,8 +80,9 @@ void track_following_get_waypoint(track_following_t* track_following)
 
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
-
-
+	// Predict waypoint position with a Kalman algorithm
+	track_following_kalman_predictor(track_following);
+	
     // Apply PID control
     track_following_WP_control_PID(track_following);
     track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];

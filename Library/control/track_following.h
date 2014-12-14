@@ -91,6 +91,16 @@ void track_following_get_waypoint(track_following_t* track_following);
 void track_following_improve_waypoint_following(track_following_t* track_following);
 
 
+// KALMAN PREDICTOR //
+// Calls the kalman predictor to get a new waypoint
+void track_following_kalman_predictor(track_following_t* track_following);
+
+// Function to check if there is a new measurement received
+// returns 1 if there is a new message
+// returns 0 otherwise
+bool track_following_new_message_received(track_following_t* track_following);
+
+
 // CONTROL //
 void track_following_WP_control_PID(track_following_t* track_following);
 

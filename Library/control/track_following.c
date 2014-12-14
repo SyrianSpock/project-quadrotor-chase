@@ -80,7 +80,18 @@ void track_following_get_waypoint(track_following_t* track_following)
 
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
-    // Kalman predictor variables
+
+
+    // Apply PID control
+    track_following_WP_control_PID(track_following);
+    track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
+}
+
+// KALMAN PREDICTOR //
+
+void track_following_kalman_predictor(track_following_t* track_following)
+{
+    // Kalman variables
     static vector_4_t state_estimate;
     static matrix_4x4_t state_estimate_covariance;
     static matrix_4x4_t process_noise_covariance;
@@ -94,19 +105,6 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
     // Update time tracker & delta_t
     delta_t = (time_keeper_get_millis() - last_time_in_loop) / 1000.0f;
     last_time_in_loop = time_keeper_get_millis();
-
-    // Flag to signal the disponibility of a new measurement
-    static bool new_measurement_received = TRUE;
-    static uint32_t last_measurement_time = 0;
-
-    // Check if a new measurement has been received & set flag accordingly
-    if(track_following->neighbors->neighbors_list[0].time_msg_received != last_measurement_time) {
-        new_measurement_received = TRUE;
-        last_measurement_time = track_following->neighbors->neighbors_list[0].time_msg_received;
-    }
-    else {
-        new_measurement_received = FALSE;
-    }
 
     // Initialise Kalman parameters once, and only once
     static bool kalman_init_done = FALSE;
@@ -129,22 +127,36 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
         process_noise_covariance,
         delta_t);
     // Only correct the prediction if there is a new measurement
-    if(new_measurement_received) {
+    if(track_following_new_message_received(track_following)) {
         kalman_correct(
             &state_estimate,
             &state_estimate_covariance,
             &last_measurement,
             design_matrix,
-			track_following);
+            track_following);
     }
 
     // Use Kalman prediction output as waypoint
     track_following->waypoint_handler->waypoint_following.pos[0] = state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] = state_estimate.v[1];
+}
 
-    // Apply PID control
-    track_following_WP_control_PID(track_following);
-    track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
+// Function to check if there is a new measurement received
+bool track_following_new_message_received(track_following_t* track_following)
+{
+    // Flag to signal the disponibility of a new measurement
+    bool new_measurement_received = FALSE;
+
+    // Store the time when last measurement was received
+    static uint32_t last_measurement_time = 0;
+
+    // Check if a new measurement has been received & set flag accordingly
+    if(track_following->neighbors->neighbors_list[0].time_msg_received != last_measurement_time) {
+        new_measurement_received = TRUE;
+        last_measurement_time = track_following->neighbors->neighbors_list[0].time_msg_received;
+    }
+
+    return new_measurement_received;
 }
 
 // CONTROL //

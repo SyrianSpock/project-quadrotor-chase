@@ -80,11 +80,12 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 	// Write your code here
 	track_following_linear_strategy(track_following);
 	track_following_WP_control_PID(track_following);
+	track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
 }
 
-							// PREDICTION //
+// PREDICTION //
 							
-// LINEAR STRATEGY
+// Linear
 void track_following_linear_strategy(track_following_t* track_following)
 {
 	uint32_t time_offset = track_following_WP_time_last_ms(track_following);
@@ -94,28 +95,18 @@ void track_following_linear_strategy(track_following_t* track_following)
 	{
 		// velocity in m/s and time_offset in ms
 		position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*((float)time_offset)/1000.0f;
-		//position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*4; // Good results
+		//position_offset = track_following->neighbors->neighbors_list[0].velocity[i]*4; // Return expected waypoint in 4 seconds - Shows better results
 		track_following->waypoint_handler->waypoint_following.pos[i] = track_following->neighbors->neighbors_list[0].position[i] + position_offset;
 	}
-	// track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
 }
 							
-							// CONTROL //
+// CONTROL //
 
 // Implement PID for the waypoint following
 void track_following_WP_control_PID(track_following_t* track_following)
 {
 	float error = 0;
 	float offset = 0;
-	
-	/*
-	float KP = 2;
-	for(int i=0;i<2; i++)
-	{
-		error = track_following_WP_distance_XYZ(track_following,i);
-		track_following->waypoint_handler->waypoint_following.pos[i] += KP*error;
-	}
-	*/
 	
 	static pid_controller_t track_following_pid_x =
 	{
@@ -178,7 +169,7 @@ void track_following_WP_control_PID(track_following_t* track_following)
 	track_following->waypoint_handler->waypoint_following.pos[i] += offset;
 }							
 							
-							// FUNCTIONS //
+// FUNCTIONS //
 							
 // time_last_WP_ms: Time since last waypoint was received
 uint32_t track_following_WP_time_last_ms(track_following_t* track_following)
@@ -197,7 +188,9 @@ float track_following_WP_distance_XYZ(track_following_t* track_following, int i)
 					- track_following->position_estimator->local_position.pos[i];
 	return distance;
 }
-							
+
+// EVALUATE //
+
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
 {
 	mavlink_msg_named_value_float_pack(	mavlink_stream->sysid,

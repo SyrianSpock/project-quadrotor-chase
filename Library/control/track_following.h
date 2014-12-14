@@ -87,15 +87,15 @@ void track_following_get_waypoint(track_following_t* track_following);
  */
 void track_following_improve_waypoint_following(track_following_t* track_following);
 
-							// PREDICTION //
+// PREDICTION //
 
 void track_following_linear_strategy(track_following_t* track_following);
 
-							// CONTROL //
+// CONTROL //
 
 void track_following_WP_control_PID(track_following_t* track_following);
 
-							// FUNCTIONS //
+// FUNCTIONS //
 
 uint32_t track_following_WP_time_last_ms(track_following_t* track_following);
 

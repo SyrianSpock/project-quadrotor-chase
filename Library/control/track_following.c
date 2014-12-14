@@ -174,8 +174,8 @@ void track_following_WP_control_PID(track_following_t* track_following)
 		.clip_min = -100.0f,
 		.clip_max = 100.0f,
 		.integrator={
-			.pregain = 0.0f,
-			.postgain = 0.0f,
+			.pregain = 0.1f,
+			.postgain = 0.1f,
 			.accumulator = 0.0f,
 			.maths_clip = 20.0f,
 			.leakiness = 0.0f
@@ -199,8 +199,8 @@ void track_following_WP_control_PID(track_following_t* track_following)
 		.clip_min = -100.0f,
 		.clip_max = 100.0f,
 		.integrator={
-			.pregain = 0.0f,
-			.postgain = 0.0f,
+			.pregain = 0.1f,
+			.postgain = 0.1f,
 			.accumulator = 0.0f,
 			.maths_clip = 20.0f,
 			.leakiness = 0.0f
@@ -217,6 +217,13 @@ void track_following_WP_control_PID(track_following_t* track_following)
 		.dt = 1,
 		.soft_zone_width = 0.0f
 	};
+	
+	if (track_following_pid_x.integrator.accumulator > 15.0f) {
+		track_following_pid_x.integrator.accumulator = 0.0f;
+	}
+	if (track_following_pid_y.integrator.accumulator > 15.0f) {
+		track_following_pid_y.integrator.accumulator = 0.0f;
+	}
 
 	int i = 0;
 	error = track_following_WP_distance_XYZ(track_following, i);

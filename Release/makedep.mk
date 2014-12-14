@@ -32,6 +32,8 @@ Library\control\joystick_parsing.c
 
 Library\control\joystick_parsing_telemetry.c
 
+Library\control\kalman_predictor.c
+
 Library\control\pid_control.c
 
 Library\control\servos_mix_quadcopter_cross.c

@@ -4,33 +4,33 @@ Library/communication/state_telemetry.d \
  ../Library/communication/state_telemetry.c \
  ../Library/communication/state_telemetry.h \
  ../Library/communication/mavlink_stream.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/stdint.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stdbool.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/stdint.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stdbool.h \
  ../Library/util/streams.h ../src/config/conf_platform.h \
  ../src/config/MAVsettings/MAV053_conf_imu_rev4.h \
  ../Library/mavlink/include/mavric/mavlink.h \
  ../Library/mavlink/include/mavric/version.h \
  ../Library/mavlink/include/mavric/mavric.h \
  ../Library/mavlink/include/mavric/../protocol.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/string.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/newlib.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/config.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/ieeefp.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/reent.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/_types.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_types.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_default_types.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/lock.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stddef.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/string.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/string.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/newlib.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/config.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/ieeefp.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/reent.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/_types.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_types.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_default_types.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/lock.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stddef.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/string.h \
  ../Library/mavlink/include/mavric/../mavlink_types.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/inttypes.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/inttypes.h \
  ../Library/mavlink/include/mavric/../mavlink_helpers.h \
  ../Library/mavlink/include/mavric/../checksum.h \
  ../Library/mavlink/include/mavric/../mavlink_conversions.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/math.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/math.h \
  ../Library/mavlink/include/mavric/../common/common.h \
  ../Library/mavlink/include/mavric/../common/../protocol.h \
  ../Library/mavlink/include/mavric/../common/./mavlink_msg_heartbeat.h \
@@ -169,9 +169,9 @@ Library/communication/state_telemetry.d \
 
 ../Library/communication/mavlink_stream.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/stdint.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/stdint.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stdbool.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stdbool.h:
 
 ../Library/util/streams.h:
 
@@ -187,35 +187,35 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32
 
 ../Library/mavlink/include/mavric/../protocol.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/string.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/string.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/newlib.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/newlib.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/config.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/config.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/ieeefp.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/ieeefp.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/reent.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/reent.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/_ansi.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/_types.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/_types.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_types.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_types.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_default_types.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/machine/_default_types.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/lock.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/lock.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stddef.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/include/stddef.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/string.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/sys/string.h:
 
 ../Library/mavlink/include/mavric/../mavlink_types.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/inttypes.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/inttypes.h:
 
 ../Library/mavlink/include/mavric/../mavlink_helpers.h:
 
@@ -223,7 +223,7 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32
 
 ../Library/mavlink/include/mavric/../mavlink_conversions.h:
 
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1057\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/math.h:
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr32\ gcc\native\3.4.1067\avr32-gnu-toolchain\bin\../lib/gcc/avr32/4.4.7/../../../../avr32/include/math.h:
 
 ../Library/mavlink/include/mavric/../common/common.h:
 

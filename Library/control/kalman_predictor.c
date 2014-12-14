@@ -107,6 +107,8 @@ uint8_t kalman_correct(
     matrix_4x4_t temp_m = mmul4(kalman_gain, design_matrix);
     temp_m = msub4(ident_4x4, temp_m);
     *state_estimate_covariance = mmul4(temp_m, *state_estimate_covariance);
+
+    return 1;
 }
 
 uint8_t kalman_update_measurement(

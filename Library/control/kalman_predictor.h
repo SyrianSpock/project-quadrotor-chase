@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * \file kalman_predictor.h
+ *
+ * \author Jonathan Arreguit
+ * \author Dorian Konrad
+ * \author Salah Missri
+ * \author David Tauxe
+ *
+ * \brief This file implements a Kalman predictor
+ *
+ ******************************************************************************/
+
 #ifndef KALMAN_PREDICTOR_H
 #define KALMAN_PREDICTOR_H
 

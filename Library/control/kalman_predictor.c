@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * \file kalman_predictor.c
+ *
+ * \author Jonathan Arreguit
+ * \author Dorian Konrad
+ * \author Salah Missri
+ * \author David Tauxe
+ *
+ * \brief This file implements a Kalman predictor
+ *
+ ******************************************************************************/
+
 #include "small_matrix.h"
 #include "linear_algebra.h"
 #include "kalman_predictor.h"

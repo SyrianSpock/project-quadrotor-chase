@@ -34,11 +34,14 @@
  *
  * \author MAV'RIC Team
  * \author Nicolas Dousse
+ * \author Jonathan Arreguit
+ * \author Dorian Konrad
+ * \author Salah Missri
+ * \author David Tauxe
  *
  * \brief This file implements a strategy to follow a GPS track
  *
  ******************************************************************************/
-
 
 #include "track_following.h"
 #include "print_util.h"
@@ -138,7 +141,112 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
     // Use Kalman prediction output as waypoint
     track_following->waypoint_handler->waypoint_following.pos[0] = state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] = state_estimate.v[1];
+
+    // Apply PID control
+    track_following_WP_control_PID(track_following);
+    track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
 }
+
+void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
+{
+	mavlink_msg_named_value_float_pack(	mavlink_stream->sysid,
+										mavlink_stream->compid,
+										msg,
+										time_keeper_get_millis(),
+										"dist2follow",
+										track_following->dist2following);
+}
+
+// CONTROL //
+
+// Implement PID for the waypoint following
+void track_following_WP_control_PID(track_following_t* track_following)
+{
+	float error = 0;
+	float offset = 0;
+
+	static pid_controller_t track_following_pid_x =
+	{
+		.p_gain = 2.0f,
+		.clip_min = -100.0f,
+		.clip_max = 100.0f,
+		.integrator={
+			.pregain = 0.5f,
+			.postgain = 0.5f,
+			.accumulator = 0.0f,
+			.maths_clip = 20.0f,
+			.leakiness = 0.0f
+		},
+		.differentiator={
+			.gain = 0.1f,
+			.previous = 0.0f,
+			.LPF = 0.5f,
+			.maths_clip = 5.0f
+		},
+		.output = 0.0f,
+		.error = 0.0f,
+		.last_update = 0.0f,
+		.dt = 1,
+		.soft_zone_width = 0.0f
+	};
+
+	static pid_controller_t track_following_pid_y =
+	{
+		.p_gain = 2.0f,
+		.clip_min = -100.0f,
+		.clip_max = 100.0f,
+		.integrator={
+			.pregain = 0.5f,
+			.postgain = 0.5f,
+			.accumulator = 0.0f,
+			.maths_clip = 20.0f,
+			.leakiness = 0.0f
+		},
+		.differentiator={
+			.gain = 0.1f,
+			.previous = 0.0f,
+			.LPF = 0.5f,
+			.maths_clip = 5.0f
+		},
+		.output = 0.0f,
+		.error = 0.0f,
+		.last_update = 0.0f,
+		.dt = 1,
+		.soft_zone_width = 0.0f
+	};
+
+	int i = 0;
+	error = track_following_WP_distance_XYZ(track_following, i);
+	offset = pid_control_update(&track_following_pid_x, error); // TODO: possible to use the _dt function
+	track_following->waypoint_handler->waypoint_following.pos[i] += offset;
+
+	i = 1;
+	error = track_following_WP_distance_XYZ(track_following, i);
+	offset = pid_control_update(&track_following_pid_y, error); // TODO: possible to use the _dt function
+	track_following->waypoint_handler->waypoint_following.pos[i] += offset;
+}
+
+// FUNCTIONS //
+
+// time_last_WP_ms: Time since last waypoint was received
+uint32_t track_following_WP_time_last_ms(track_following_t* track_following)
+{
+	uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
+	uint32_t time_actual = time_keeper_get_millis(); // actual time in ms
+	uint32_t time_offset = time_actual - timeWP; // time since last waypoint in ms
+
+	return time_offset;
+}
+
+// calculate distance to waypoint according to an axis
+float track_following_WP_distance_XYZ(track_following_t* track_following, int i)
+{
+	float distance = track_following->waypoint_handler->waypoint_following.pos[i]
+					- track_following->position_estimator->local_position.pos[i];
+	return distance;
+}
+
+// EVALUATE //
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
 {

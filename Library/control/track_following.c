@@ -170,12 +170,12 @@ void track_following_WP_control_PID(track_following_t* track_following)
 
 	static pid_controller_t track_following_pid_x =
 	{
-		.p_gain = 2.0f,
+		.p_gain = 5.0f,
 		.clip_min = -100.0f,
 		.clip_max = 100.0f,
 		.integrator={
-			.pregain = 0.3f,
-			.postgain = 0.5f,
+			.pregain = 0.0f,
+			.postgain = 0.0f,
 			.accumulator = 0.0f,
 			.maths_clip = 20.0f,
 			.leakiness = 0.0f
@@ -195,12 +195,12 @@ void track_following_WP_control_PID(track_following_t* track_following)
 
 	static pid_controller_t track_following_pid_y =
 	{
-		.p_gain = 2.0f,
+		.p_gain = 5.0f,
 		.clip_min = -100.0f,
 		.clip_max = 100.0f,
 		.integrator={
-			.pregain = 0.3f,
-			.postgain = 0.5f,
+			.pregain = 0.0f,
+			.postgain = 0.0f,
 			.accumulator = 0.0f,
 			.maths_clip = 20.0f,
 			.leakiness = 0.0f

@@ -147,16 +147,6 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
     track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
 }
 
-void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
-{
-	mavlink_msg_named_value_float_pack(	mavlink_stream->sysid,
-										mavlink_stream->compid,
-										msg,
-										time_keeper_get_millis(),
-										"dist2follow",
-										track_following->dist2following);
-}
-
 // CONTROL //
 
 // Implement PID for the waypoint following

@@ -82,7 +82,7 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 {
 	// Predict waypoint position with a Kalman algorithm
 	track_following_kalman_predictor(track_following);
-	
+
     // Apply PID control
     track_following_WP_control_PID(track_following);
     track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
@@ -92,13 +92,19 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
 void track_following_kalman_predictor(track_following_t* track_following)
 {
-    // Kalman variables
-    static vector_4_t state_estimate;
-    static matrix_4x4_t state_estimate_covariance;
-    static matrix_4x4_t process_noise_covariance;
-    static matrix_4x4_t design_matrix;
-    static vector_4_t last_measurement;
-
+    // Kalman variables for x axis
+    static vector_2_t state_estimate_x;
+    static matrix_2x2_t state_estimate_covariance_x;
+    static matrix_2x2_t process_noise_covariance_x;
+    static matrix_2x2_t design_matrix_x;
+    static vector_2_t last_measurement_x;
+    // Kalman variables for y axis
+    static vector_2_t state_estimate_y;
+    static matrix_2x2_t state_estimate_covariance_y;
+    static matrix_2x2_t process_noise_covariance_y;
+    static matrix_2x2_t design_matrix_y;
+    static vector_2_t last_measurement_y;
+    // Kalman parameters
     static float max_acc = 10.0f;
     static float delta_t = 0.0f;
     static uint32_t last_time_in_loop = 0;
@@ -112,10 +118,17 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     if(!kalman_init_done) {
         kalman_init(
-            &state_estimate,
-            &state_estimate_covariance,
-            &process_noise_covariance,
-            &design_matrix,
+            &state_estimate_x,
+            &state_estimate_covariance_x,
+            &process_noise_covariance_x,
+            &design_matrix_x,
+            max_acc,
+            delta_t);
+        kalman_init(
+            &state_estimate_y,
+            &state_estimate_covariance_y,
+            &process_noise_covariance_y,
+            &design_matrix_y,
             max_acc,
             delta_t);
         kalman_init_done = TRUE;
@@ -123,23 +136,36 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Kalman predictor loop
     kalman_predict(
-        &state_estimate,
-        &state_estimate_covariance,
-        process_noise_covariance,
+        &state_estimate_x,
+        &state_estimate_covariance_x,
+        process_noise_covariance_x,
+        delta_t);
+    kalman_predict(
+        &state_estimate_y,
+        &state_estimate_covariance_y,
+        process_noise_covariance_y,
         delta_t);
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
         kalman_correct(
-            &state_estimate,
-            &state_estimate_covariance,
-            &last_measurement,
-            design_matrix,
+            &state_estimate_x,
+            &state_estimate_covariance_x,
+            &last_measurement_x,
+            design_matrix_x,
+            track_following);
+        kalman_correct(
+            &state_estimate_y,
+            &state_estimate_covariance_y,
+            &last_measurement_y,
+            design_matrix_y,
             track_following);
     }
 
     // Use Kalman prediction output as waypoint
-    track_following->waypoint_handler->waypoint_following.pos[0] = state_estimate.v[0];
-    track_following->waypoint_handler->waypoint_following.pos[1] = state_estimate.v[1];
+    track_following->waypoint_handler->waypoint_following.pos[0] =
+        state_estimate_x.v[0];
+    track_following->waypoint_handler->waypoint_following.pos[1] =
+        state_estimate_y.v[0];
 }
 
 // Function to check if there is a new measurement received
@@ -217,7 +243,7 @@ void track_following_WP_control_PID(track_following_t* track_following)
 		.dt = 1,
 		.soft_zone_width = 0.0f
 	};
-	
+
 	if (track_following_pid_x.integrator.accumulator > 15.0f) {
 		track_following_pid_x.integrator.accumulator = 0.0f;
 	}

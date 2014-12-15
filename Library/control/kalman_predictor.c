@@ -35,8 +35,8 @@ uint8_t kalman_init(
     }
     *state_estimate_covariance = zero_2x2;
 
-    float sigma_x = 0.015625 * max_acc*max_acc * delta_t*delta_t*delta_t*delta_t;
-    float sigma_v = 0.0625 * max_acc*max_acc * delta_t*delta_t;
+    float sigma_x = (1.0f / 8.0f) * max_acc * delta_t * delta_t;
+    float sigma_v = (1.0f / 4.0f) * max_acc * delta_t;
     process_noise_covariance->v[0][0] = sigma_x * sigma_x;
     process_noise_covariance->v[0][1] = sigma_x * sigma_v;
     process_noise_covariance->v[1][0] = sigma_x * sigma_v;

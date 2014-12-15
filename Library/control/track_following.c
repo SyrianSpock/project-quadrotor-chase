@@ -85,7 +85,6 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
     // Apply PID control
     track_following_WP_control_PID(track_following);
-    track_following->waypoint_handler->waypoint_following.pos[2] = track_following->neighbors->neighbors_list[0].position[2];
 }
 
 // KALMAN PREDICTOR //
@@ -104,6 +103,12 @@ void track_following_kalman_predictor(track_following_t* track_following)
     static matrix_2x2_t process_noise_covariance_y;
     static matrix_2x2_t design_matrix_y;
     static vector_2_t last_measurement_y;
+    // Kalman variables for z axis
+    static vector_2_t state_estimate_z;
+    static matrix_2x2_t state_estimate_covariance_z;
+    static matrix_2x2_t process_noise_covariance_z;
+    static matrix_2x2_t design_matrix_z;
+    static vector_2_t last_measurement_z;
     // Kalman parameters
     static float max_acc = 10.0f;
     static float delta_t = 0.0f;
@@ -131,6 +136,13 @@ void track_following_kalman_predictor(track_following_t* track_following)
             &design_matrix_y,
             max_acc,
             delta_t);
+        kalman_init(
+            &state_estimate_z,
+            &state_estimate_covariance_z,
+            &process_noise_covariance_z,
+            &design_matrix_z,
+            max_acc,
+            delta_t);
         kalman_init_done = TRUE;
     }
 
@@ -145,9 +157,14 @@ void track_following_kalman_predictor(track_following_t* track_following)
         &state_estimate_covariance_y,
         process_noise_covariance_y,
         delta_t);
+    kalman_predict(
+        &state_estimate_z,
+        &state_estimate_covariance_z,
+        process_noise_covariance_z,
+        delta_t);
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
-        // Get last waypoint data for x and y
+        // Get last waypoint data for x, y and z
         last_measurement_x.v[0] =
             track_following->neighbors->neighbors_list[0].position[0];
         last_measurement_x.v[1] =
@@ -156,6 +173,10 @@ void track_following_kalman_predictor(track_following_t* track_following)
             track_following->neighbors->neighbors_list[0].position[1];
         last_measurement_y.v[1] =
             track_following->neighbors->neighbors_list[0].velocity[1];
+        last_measurement_z.v[0] =
+            track_following->neighbors->neighbors_list[0].position[2];
+        last_measurement_z.v[1] =
+            track_following->neighbors->neighbors_list[0].velocity[2];
         // Correct Kalman predictor with this new data
         kalman_correct(
             &state_estimate_x,
@@ -169,6 +190,12 @@ void track_following_kalman_predictor(track_following_t* track_following)
             &last_measurement_y,
             design_matrix_y,
             track_following);
+        kalman_correct(
+            &state_estimate_z,
+            &state_estimate_covariance_z,
+            &last_measurement_z,
+            design_matrix_z,
+            track_following);
     }
 
     // Use Kalman prediction output as waypoint
@@ -176,6 +203,8 @@ void track_following_kalman_predictor(track_following_t* track_following)
         state_estimate_x.v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] =
         state_estimate_y.v[0];
+    track_following->waypoint_handler->waypoint_following.pos[2] =
+        state_estimate_z.v[0];
 }
 
 // Function to check if there is a new measurement received
@@ -254,21 +283,55 @@ void track_following_WP_control_PID(track_following_t* track_following)
         .soft_zone_width = 0.0f
     };
 
+    static pid_controller_t track_following_pid_z =
+    {
+        .p_gain = 5.0f,
+        .clip_min = -100.0f,
+        .clip_max = 100.0f,
+        .integrator={
+            .pregain = 0.1f,
+            .postgain = 0.1f,
+            .accumulator = 0.0f,
+            .maths_clip = 20.0f,
+            .leakiness = 0.0f
+        },
+        .differentiator={
+            .gain = 0.1f,
+            .previous = 0.0f,
+            .LPF = 0.5f,
+            .maths_clip = 5.0f
+        },
+        .output = 0.0f,
+        .error = 0.0f,
+        .last_update = 0.0f,
+        .dt = 1,
+        .soft_zone_width = 0.0f
+    };
+
     if (track_following_pid_x.integrator.accumulator > 15.0f) {
         track_following_pid_x.integrator.accumulator = 0.0f;
     }
     if (track_following_pid_y.integrator.accumulator > 15.0f) {
         track_following_pid_y.integrator.accumulator = 0.0f;
     }
+    if (track_following_pid_z.integrator.accumulator > 15.0f) {
+        track_following_pid_z.integrator.accumulator = 0.0f;
+    }
 
+    // Apply PID on x
     int i = 0;
     error = track_following_WP_distance_XYZ(track_following, i);
-    offset = pid_control_update(&track_following_pid_x, error); // TODO: possible to use the _dt function
+    offset = pid_control_update(&track_following_pid_x, error);
     track_following->waypoint_handler->waypoint_following.pos[i] += offset;
-
+    // Apply PID on y
     i = 1;
     error = track_following_WP_distance_XYZ(track_following, i);
-    offset = pid_control_update(&track_following_pid_y, error); // TODO: possible to use the _dt function
+    offset = pid_control_update(&track_following_pid_y, error);
+    track_following->waypoint_handler->waypoint_following.pos[i] += offset;
+    // Apply PID on z
+    i = 2;
+    error = track_following_WP_distance_XYZ(track_following, i);
+    offset = pid_control_update(&track_following_pid_y, error);
     track_following->waypoint_handler->waypoint_following.pos[i] += offset;
 }
 

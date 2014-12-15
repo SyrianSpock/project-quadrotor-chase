@@ -121,19 +121,19 @@ void track_following_kalman_predictor(track_following_t* track_following)
     // Set measurement covariance on x axis
     float sigma_x = 5.0f;
     float sigma_v = 0.5f;
-    static matrix_2x2_t measurement_covariance_x
+    static const matrix_2x2_t measurement_covariance_x
        {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
             {sigma_x * sigma_v, sigma_v * sigma_v}} };
     // Set measurement covariance on y axis
     sigma_x = 5.0f;
     sigma_v = 0.5f;
-    static matrix_2x2_t measurement_covariance_y
+    static const matrix_2x2_t measurement_covariance_y
        {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
             {sigma_x * sigma_v, sigma_v * sigma_v}} };
     // Set measurement covariance on z axis
     sigma_x = 1.0f;
     sigma_v = 0.5f;
-    static matrix_2x2_t measurement_covariance_z
+    static const matrix_2x2_t measurement_covariance_z
        {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
             {sigma_x * sigma_v, sigma_v * sigma_v}} };
 

@@ -119,23 +119,17 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Considering estimated errors on GPS data
     // Set measurement covariance on x axis
-    float sigma_x = 5.0f;
-    float sigma_v = 0.5f;
-    static const matrix_2x2_t measurement_covariance_x
-       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
-            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+    static vector_2_t measurement_variance_x = {.v{3.0f, 0.5f}};
+    static matrix_2x2_t measurement_covariance_x = tp2(measurement_variance_x,
+                                                       measurement_variance_x);
     // Set measurement covariance on y axis
-    sigma_x = 5.0f;
-    sigma_v = 0.5f;
-    static const matrix_2x2_t measurement_covariance_y
-       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
-            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+    static vector_2_t measurement_variance_y = {.v{3.0f, 0.5f}};
+    static matrix_2x2_t measurement_covariance_x = tp2(measurement_variance_y,
+                                                       measurement_variance_y);
     // Set measurement covariance on z axis
-    sigma_x = 1.0f;
-    sigma_v = 0.5f;
-    static const matrix_2x2_t measurement_covariance_z
-       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
-            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+    static vector_2_t measurement_variance_z = {.v{1.0f, 0.2f}};
+    static matrix_2x2_t measurement_covariance_x = tp2(measurement_variance_z,
+                                                       measurement_variance_z);
 
     // Update time tracker & delta_t
     delta_t = (time_keeper_get_millis() - last_time_in_loop) / 1000.0f;

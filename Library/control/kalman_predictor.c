@@ -107,6 +107,7 @@ uint8_t kalman_correct(
     // Compute the new optimal Kalman gain
     kalman_compute_gain(
         &kalman_gain,
+        state_estimate_covariance,
         design_matrix);
 
     // Correct state estimate according to new measurement
@@ -114,9 +115,9 @@ uint8_t kalman_correct(
                             mvmul2(kalman_gain, measurement_residual));
 
     // Correct state estimate covariance according to new measurement
-    matrix_2x2_t temp_m = mmul2(kalman_gain, design_matrix);
-    temp_m = msub2(ident_2x2, temp_m);
-    *state_estimate_covariance = mmul2(temp_m, *state_estimate_covariance);
+    *state_estimate_covariance =
+        mmul2(msub2(ident_2x2, mmul2(kalman_gain, design_matrix)),
+              *state_estimate_covariance);
 
     return 1;
 }
@@ -142,15 +143,25 @@ uint8_t kalman_update_measurement_residual(
 
 uint8_t kalman_compute_gain(
             matrix_2x2_t * kalman_gain,
+            matrix_2x2_t * state_estimate_covariance,
             const matrix_2x2_t design_matrix)
 {
     // Make sure the input is set as expected
-    if(kalman_gain == NULL) {
+    if(kalman_gain == NULL || state_estimate_covariance == NULL) {
         return 0;
     }
 
-    // Simplified computation to maximise computational efficiency
-    *kalman_gain = inv2(design_matrix);
+    // Considering R != 0, using estimated errors on GPS data
+    float sigma_x = 5.0f;
+    float sigma_v = 0.5f;
+    matrix_2x2_t measurement_covariance
+       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
+            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+
+    // As H = Identity, we can simplify the gain computation
+    *kalman_gain = mmul2(*state_estimate_covariance,
+                         inv2(madd2(*state_estimate_covariance,
+                                    measurement_covariance)));
 
     return 1;
 }

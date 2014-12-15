@@ -32,8 +32,8 @@ uint8_t kalman_init(
 
     *(kalman_handler->design_matrix) = ident_2x2;
 
-    sigma_x = measurement_variance->v[0];
-    sigma_v = measurement_variance->v[1];
+    float sigma_x = measurement_variance->v[0];
+    float sigma_v = measurement_variance->v[1];
     kalman_handler->measurement_covariance->v[0][0] = sigma_x * sigma_x;
     kalman_handler->measurement_covariance->v[0][1] = sigma_x * sigma_v;
     kalman_handler->measurement_covariance->v[1][0] = sigma_x * sigma_v;

@@ -99,7 +99,7 @@ void track_following_kalman_predictor(track_following_t* track_following)
     static vector_2_t last_measurement_x, last_measurement_y, last_measurement_z;
     // Kalman parameters
     static float max_acc = 10.0f;
-    static float delta_t = 0.0f;
+    static float delta_t = 1.0f;
     static uint32_t last_time_in_loop = 0;
 
     // Update time tracker & delta_t
@@ -113,7 +113,7 @@ void track_following_kalman_predictor(track_following_t* track_following)
         // Measurement variance that estimates GPS error
         vector_2_t gps_variance_x = {.v={3.0f, 0.5f}};
         vector_2_t gps_variance_y = {.v={3.0f, 0.5f}};
-        vector_2_t gps_z = {.v={1.0f, 0.2f}};
+        vector_2_t gps_variance_z = {.v={1.0f, 0.2f}};
         // Initialise Kalman paremeters
         kalman_init(&kalman_handler_x, &gps_variance_x, max_acc, delta_t);
         kalman_init(&kalman_handler_y, &gps_variance_y, max_acc, delta_t);

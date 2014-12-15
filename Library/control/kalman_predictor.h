@@ -50,7 +50,7 @@ uint8_t kalman_update_measurement_residual(
             vector_2_t * last_measurement,
             const vector_2_t state_estimate,
             const matrix_2x2_t design_matrix,
-			track_following_t * track_following);
+            track_following_t * track_following);
 
 uint8_t kalman_compute_gain(
             matrix_2x2_t * kalman_gain,

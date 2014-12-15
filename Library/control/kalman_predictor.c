@@ -60,7 +60,7 @@ uint8_t kalman_predict(
 
     matrix_2x2_t state_propagation_matrix =
        {.v={{1.0f, delta_t},
-            {0.0f, 1.0f} };
+            {0.0f, 1.0f}} };
     matrix_2x2_t state_propagation_matrix_trans =
        {.v={{1.0f,    0.0f},
             {delta_t, 1.0f}} };
@@ -102,7 +102,7 @@ uint8_t kalman_correct(
         last_measurement,
         *state_estimate,
         design_matrix,
-		track_following);
+        track_following);
 
     // Compute the new optimal Kalman gain
     kalman_compute_gain(

@@ -45,7 +45,7 @@ uint8_t kalman_correct(
             const matrix_2x2_t design_matrix,
             track_following_t* track_following);
 
-uint8_t kalman_update_measurement(
+uint8_t kalman_update_measurement_residual(
             vector_2_t * measurement_residual,
             vector_2_t * last_measurement,
             const vector_2_t state_estimate,

@@ -33,7 +33,7 @@ uint8_t kalman_init(
     for(int i = 0; i < 2; i++) {
         state_estimate->v[i]= 0.0f;
     }
-    *state_estimate_covariance = zeros_2x2;
+    *state_estimate_covariance = zero_2x2;
 
     float sigma_x = 0.015625 * max_acc*max_acc * delta_t*delta_t*delta_t*delta_t;
     float sigma_v = 0.0625 * max_acc*max_acc * delta_t*delta_t;
@@ -96,7 +96,7 @@ uint8_t kalman_correct(
     matrix_2x2_t kalman_gain;
 
     // Take new measurement into account
-    kalman_update_measurement(
+    kalman_update_measurement_residual(
         &measurement_residual,
         last_measurement,
         *state_estimate,
@@ -120,7 +120,7 @@ uint8_t kalman_correct(
     return 1;
 }
 
-uint8_t kalman_update_measurement(
+uint8_t kalman_update_measurement_residual(
             vector_2_t * measurement_residual,
             vector_2_t * last_measurement,
             const vector_2_t state_estimate,
@@ -131,16 +131,6 @@ uint8_t kalman_update_measurement(
     if(measurement_residual == NULL || last_measurement == NULL) {
         return 0;
     }
-
-    // Get last waypoint data
-    last_measurement->v[0] =
-        track_following->neighbors->neighbors_list[0].position[0];
-    last_measurement->v[1] =
-        track_following->neighbors->neighbors_list[0].position[1];
-    last_measurement->v[2] =
-        track_following->neighbors->neighbors_list[0].velocity[0];
-    last_measurement->v[3] =
-        track_following->neighbors->neighbors_list[0].velocity[1];
 
     // Compute measurement residual according to new measurement
     *measurement_residual = vsub2(*last_measurement,

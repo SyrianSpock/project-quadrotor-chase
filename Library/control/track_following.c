@@ -147,6 +147,16 @@ void track_following_kalman_predictor(track_following_t* track_following)
         delta_t);
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
+        // Get last waypoint data for x and y
+        last_measurement_x->v[0] =
+            track_following->neighbors->neighbors_list[0].position[0];
+        last_measurement_x->v[1] =
+            track_following->neighbors->neighbors_list[0].velocity[0];
+        last_measurement_y->v[0] =
+            track_following->neighbors->neighbors_list[0].position[1];
+        last_measurement_y->v[1] =
+            track_following->neighbors->neighbors_list[0].velocity[1];
+        // Correct Kalman predictor with this new data
         kalman_correct(
             &state_estimate_x,
             &state_estimate_covariance_x,

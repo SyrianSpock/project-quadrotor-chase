@@ -42,6 +42,7 @@ uint8_t kalman_correct(
             vector_2_t * state_estimate,
             matrix_2x2_t * state_estimate_covariance,
             vector_2_t * last_measurement,
+            const matrix_2x2_t measurement_covariance,
             const matrix_2x2_t design_matrix,
             track_following_t* track_following);
 
@@ -55,6 +56,7 @@ uint8_t kalman_update_measurement_residual(
 uint8_t kalman_compute_gain(
             matrix_2x2_t * kalman_gain,
             matrix_2x2_t * state_estimate_covariance,
+            const matrix_2x2_t measurement_covariance,
             const matrix_2x2_t design_matrix);
 
 

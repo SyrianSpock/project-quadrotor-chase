@@ -83,6 +83,7 @@ uint8_t kalman_correct(
             vector_2_t * state_estimate,
             matrix_2x2_t * state_estimate_covariance,
             vector_2_t * last_measurement,
+            const matrix_2x2_t measurement_covariance,
             const matrix_2x2_t design_matrix,
             track_following_t* track_following)
 {
@@ -108,6 +109,7 @@ uint8_t kalman_correct(
     kalman_compute_gain(
         &kalman_gain,
         state_estimate_covariance,
+        measurement_covariance,
         design_matrix);
 
     // Correct state estimate according to new measurement
@@ -144,19 +146,13 @@ uint8_t kalman_update_measurement_residual(
 uint8_t kalman_compute_gain(
             matrix_2x2_t * kalman_gain,
             matrix_2x2_t * state_estimate_covariance,
+            const matrix_2x2_t measurement_covariance,
             const matrix_2x2_t design_matrix)
 {
     // Make sure the input is set as expected
     if(kalman_gain == NULL || state_estimate_covariance == NULL) {
         return 0;
     }
-
-    // Considering R != 0, using estimated errors on GPS data
-    float sigma_x = 5.0f;
-    float sigma_v = 0.5f;
-    matrix_2x2_t measurement_covariance
-       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
-            {sigma_x * sigma_v, sigma_v * sigma_v}} };
 
     // As H = Identity, we can simplify the gain computation
     *kalman_gain = mmul2(*state_estimate_covariance,

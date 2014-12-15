@@ -117,6 +117,26 @@ void track_following_kalman_predictor(track_following_t* track_following)
     static float delta_t = 0.0f;
     static uint32_t last_time_in_loop = 0;
 
+    // Considering estimated errors on GPS data
+    // Set measurement covariance on x axis
+    float sigma_x = 5.0f;
+    float sigma_v = 0.5f;
+    static matrix_2x2_t measurement_covariance_x
+       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
+            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+    // Set measurement covariance on y axis
+    sigma_x = 5.0f;
+    sigma_v = 0.5f;
+    static matrix_2x2_t measurement_covariance_y
+       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
+            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+    // Set measurement covariance on z axis
+    sigma_x = 1.0f;
+    sigma_v = 0.5f;
+    static matrix_2x2_t measurement_covariance_z
+       {.v={{sigma_x * sigma_x, sigma_x * sigma_v},
+            {sigma_x * sigma_v, sigma_v * sigma_v}} };
+
     // Update time tracker & delta_t
     delta_t = (time_keeper_get_millis() - last_time_in_loop) / 1000.0f;
     last_time_in_loop = time_keeper_get_millis();
@@ -185,18 +205,21 @@ void track_following_kalman_predictor(track_following_t* track_following)
             &state_estimate_x,
             &state_estimate_covariance_x,
             &last_measurement_x,
+            measurement_covariance_x,
             design_matrix_x,
             track_following);
         kalman_correct(
             &state_estimate_y,
             &state_estimate_covariance_y,
             &last_measurement_y,
+            measurement_covariance_y,
             design_matrix_y,
             track_following);
         kalman_correct(
             &state_estimate_z,
             &state_estimate_covariance_z,
             &last_measurement_z,
+            measurement_covariance_z,
             design_matrix_z,
             track_following);
     }

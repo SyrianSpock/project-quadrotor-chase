@@ -27,7 +27,6 @@ extern "C" {
 typedef struct kalman_handler_t {
     vector_2_t * state_estimate;
     matrix_2x2_t * state_estimate_covariance;
-    matrix_2x2_t * process_noise_covariance;
     matrix_2x2_t * design_matrix;
     matrix_2x2_t * measurement_covariance;
 } kalman_handler_t;
@@ -40,6 +39,7 @@ uint8_t kalman_init(
 
 uint8_t kalman_predict(
             kalman_handler_t * kalman_handler,
+            float max_acc,
             float delta_t);
 
 uint8_t kalman_correct(

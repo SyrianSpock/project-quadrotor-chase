@@ -30,13 +30,6 @@ uint8_t kalman_init(
     }
     *(kalman_handler->state_estimate_covariance) = zero_2x2;
 
-    float sigma_x = (1.0f / 8.0f) * max_acc * delta_t * delta_t;
-    float sigma_v = (1.0f / 4.0f) * max_acc * delta_t;
-    kalman_handler->process_noise_covariance->v[0][0] = sigma_x * sigma_x;
-    kalman_handler->process_noise_covariance->v[0][1] = sigma_x * sigma_v;
-    kalman_handler->process_noise_covariance->v[1][0] = sigma_x * sigma_v;
-    kalman_handler->process_noise_covariance->v[1][1] = sigma_v * sigma_v;
-
     *(kalman_handler->design_matrix) = ident_2x2;
 
     sigma_x = measurement_variance->v[0];
@@ -51,6 +44,7 @@ uint8_t kalman_init(
 
 uint8_t kalman_predict(
             kalman_handler_t * kalman_handler,
+            float max_acc,
             float delta_t)
 {
     // Make sure the input is set as expected
@@ -58,12 +52,22 @@ uint8_t kalman_predict(
         return 0;
     }
 
+    // Compute new state propagation matrix
     matrix_2x2_t state_propagation_matrix =
        {.v={{1.0f, delta_t},
             {0.0f, 1.0f}} };
     matrix_2x2_t state_propagation_matrix_trans =
        {.v={{1.0f,    0.0f},
             {delta_t, 1.0f}} };
+
+    // Compute new process noise covariance matrix
+    float sigma_x = (1.0f / 8.0f) * max_acc * delta_t * delta_t;
+    float sigma_v = (1.0f / 4.0f) * max_acc * delta_t;
+    matrix_2x2_t process_noise_covariance;
+    process_noise_covariance.v[0][0] = sigma_x * sigma_x;
+    process_noise_covariance.v[0][1] = sigma_x * sigma_v;
+    process_noise_covariance.v[1][0] = sigma_x * sigma_v;
+    process_noise_covariance.v[1][1] = sigma_v * sigma_v;
 
     // Predict state estimate
     *(kalman_handler->state_estimate) =
@@ -78,7 +82,7 @@ uint8_t kalman_predict(
               *(kalman_handler->state_estimate_covariance));
     *(kalman_handler->state_estimate_covariance) =
         madd2(*(kalman_handler->state_estimate_covariance),
-              *(kalman_handler->process_noise_covariance));
+              process_noise_covariance);
 
     return 1;
 }

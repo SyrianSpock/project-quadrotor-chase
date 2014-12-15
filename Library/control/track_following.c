@@ -111,20 +111,20 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     if(!kalman_init_done) {
         // Measurement variance that estimates GPS error
-        vector_2_t measurement_variance_x = {.v={3.0f, 0.5f}};
-        vector_2_t measurement_variance_y = {.v={3.0f, 0.5f}};
-        vector_2_t measurement_variance_z = {.v={1.0f, 0.2f}};
+        vector_2_t gps_variance_x = {.v={3.0f, 0.5f}};
+        vector_2_t gps_variance_y = {.v={3.0f, 0.5f}};
+        vector_2_t gps_z = {.v={1.0f, 0.2f}};
         // Initialise Kalman paremeters
-        kalman_init(&kalman_handler_x, measurement_variance_x, max_acc, delta_t);
-        kalman_init(&kalman_handler_y, measurement_variance_y, max_acc, delta_t);
-        kalman_init(&kalman_handler_z, measurement_variance_z, max_acc, delta_t);
+        kalman_init(&kalman_handler_x, &gps_variance_x, max_acc, delta_t);
+        kalman_init(&kalman_handler_y, &gps_variance_y, max_acc, delta_t);
+        kalman_init(&kalman_handler_z, &gps_variance_z, max_acc, delta_t);
         kalman_init_done = TRUE;
     }
 
     // Kalman predictor loop
-    kalman_predict(&kalman_handler_x, delta_t);
-    kalman_predict(&kalman_handler_y, delta_t);
-    kalman_predict(&kalman_handler_z, delta_t);
+    kalman_predict(&kalman_handler_x, max_acc, delta_t);
+    kalman_predict(&kalman_handler_y, max_acc, delta_t);
+    kalman_predict(&kalman_handler_z, max_acc, delta_t);
 
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {

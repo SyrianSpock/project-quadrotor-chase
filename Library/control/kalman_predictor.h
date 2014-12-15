@@ -54,8 +54,8 @@ uint8_t kalman_update_measurement_residual(
             track_following_t * track_following);
 
 uint8_t kalman_compute_gain(
-            matrix_2x2_t * kalman_gain,
-            kalman_handler_t * kalman_handler);
+            kalman_handler_t * kalman_handler,
+			matrix_2x2_t * kalman_gain);
 
 
 #ifdef __cplusplus

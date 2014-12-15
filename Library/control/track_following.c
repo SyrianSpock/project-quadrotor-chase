@@ -149,11 +149,11 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Use Kalman prediction output as waypoint
     track_following->waypoint_handler->waypoint_following.pos[0] =
-        kalman_handler_x->state_estimate.v[0];
+        kalman_handler_x.state_estimate->v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] =
-        kalman_handler_y->state_estimate.v[0];
+        kalman_handler_y.state_estimate->v[0];
     track_following->waypoint_handler->waypoint_following.pos[2] =
-        kalman_handler_z->state_estimate.v[0];
+        kalman_handler_z.state_estimate->v[0];
 }
 
 // Function to check if there is a new measurement received

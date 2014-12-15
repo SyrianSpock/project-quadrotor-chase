@@ -94,42 +94,13 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
 void track_following_kalman_predictor(track_following_t* track_following)
 {
-    // Kalman variables for x axis
-    static vector_2_t state_estimate_x;
-    static matrix_2x2_t state_estimate_covariance_x;
-    static matrix_2x2_t process_noise_covariance_x;
-    static matrix_2x2_t design_matrix_x;
-    static vector_2_t last_measurement_x;
-    // Kalman variables for y axis
-    static vector_2_t state_estimate_y;
-    static matrix_2x2_t state_estimate_covariance_y;
-    static matrix_2x2_t process_noise_covariance_y;
-    static matrix_2x2_t design_matrix_y;
-    static vector_2_t last_measurement_y;
-    // Kalman variables for z axis
-    static vector_2_t state_estimate_z;
-    static matrix_2x2_t state_estimate_covariance_z;
-    static matrix_2x2_t process_noise_covariance_z;
-    static matrix_2x2_t design_matrix_z;
-    static vector_2_t last_measurement_z;
+    // Kalman variables for x, y and z axis
+    static kalman_handler_t kalman_handler_x, kalman_handler_y, kalman_handler_z;
+    static vector_2_t last_measurement_x, last_measurement_y, last_measurement_z;
     // Kalman parameters
     static float max_acc = 10.0f;
     static float delta_t = 0.0f;
     static uint32_t last_time_in_loop = 0;
-
-    // Considering estimated errors on GPS data
-    // Set measurement covariance on x axis
-    static vector_2_t measurement_variance_x = {.v{3.0f, 0.5f}};
-    static matrix_2x2_t measurement_covariance_x = tp2(measurement_variance_x,
-                                                       measurement_variance_x);
-    // Set measurement covariance on y axis
-    static vector_2_t measurement_variance_y = {.v{3.0f, 0.5f}};
-    static matrix_2x2_t measurement_covariance_x = tp2(measurement_variance_y,
-                                                       measurement_variance_y);
-    // Set measurement covariance on z axis
-    static vector_2_t measurement_variance_z = {.v{1.0f, 0.2f}};
-    static matrix_2x2_t measurement_covariance_x = tp2(measurement_variance_z,
-                                                       measurement_variance_z);
 
     // Update time tracker & delta_t
     delta_t = (time_keeper_get_millis() - last_time_in_loop) / 1000.0f;
@@ -139,46 +110,22 @@ void track_following_kalman_predictor(track_following_t* track_following)
     static bool kalman_init_done = FALSE;
 
     if(!kalman_init_done) {
-        kalman_init(
-            &state_estimate_x,
-            &state_estimate_covariance_x,
-            &process_noise_covariance_x,
-            &design_matrix_x,
-            max_acc,
-            delta_t);
-        kalman_init(
-            &state_estimate_y,
-            &state_estimate_covariance_y,
-            &process_noise_covariance_y,
-            &design_matrix_y,
-            max_acc,
-            delta_t);
-        kalman_init(
-            &state_estimate_z,
-            &state_estimate_covariance_z,
-            &process_noise_covariance_z,
-            &design_matrix_z,
-            max_acc,
-            delta_t);
+        // Measurement variance that estimates GPS error
+        vector_2_t measurement_variance_x = {.v={3.0f, 0.5f} };
+        vector_2_t measurement_variance_y = {.v={3.0f, 0.5f} };
+        vector_2_t measurement_variance_z = {.v={1.0f, 0.2f} };
+        // Initialise Kalman paremeters
+        kalman_init(&kalman_handler_x, measurement_variance_x, max_acc, delta_t);
+        kalman_init(&kalman_handler_y, measurement_variance_y, max_acc, delta_t);
+        kalman_init(&kalman_handler_z, measurement_variance_z, max_acc, delta_t);
         kalman_init_done = TRUE;
     }
 
     // Kalman predictor loop
-    kalman_predict(
-        &state_estimate_x,
-        &state_estimate_covariance_x,
-        process_noise_covariance_x,
-        delta_t);
-    kalman_predict(
-        &state_estimate_y,
-        &state_estimate_covariance_y,
-        process_noise_covariance_y,
-        delta_t);
-    kalman_predict(
-        &state_estimate_z,
-        &state_estimate_covariance_z,
-        process_noise_covariance_z,
-        delta_t);
+    kalman_predict(&kalman_handler_x, delta_t);
+    kalman_predict(&kalman_handler_y, delta_t);
+    kalman_predict(&kalman_handler_z, delta_t);
+
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
         // Get last waypoint data for x, y and z
@@ -195,36 +142,18 @@ void track_following_kalman_predictor(track_following_t* track_following)
         last_measurement_z.v[1] =
             track_following->neighbors->neighbors_list[0].velocity[2];
         // Correct Kalman predictor with this new data
-        kalman_correct(
-            &state_estimate_x,
-            &state_estimate_covariance_x,
-            &last_measurement_x,
-            measurement_covariance_x,
-            design_matrix_x,
-            track_following);
-        kalman_correct(
-            &state_estimate_y,
-            &state_estimate_covariance_y,
-            &last_measurement_y,
-            measurement_covariance_y,
-            design_matrix_y,
-            track_following);
-        kalman_correct(
-            &state_estimate_z,
-            &state_estimate_covariance_z,
-            &last_measurement_z,
-            measurement_covariance_z,
-            design_matrix_z,
-            track_following);
+        kalman_correct(&kalman_handler_x, &last_measurement_x, track_following);
+        kalman_correct(&kalman_handler_y, &last_measurement_y, track_following);
+        kalman_correct(&kalman_handler_z, &last_measurement_z, track_following);
     }
 
     // Use Kalman prediction output as waypoint
     track_following->waypoint_handler->waypoint_following.pos[0] =
-        state_estimate_x.v[0];
+        kalman_handler_x->state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] =
-        state_estimate_y.v[0];
+        kalman_handler_y->state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[2] =
-        state_estimate_z.v[0];
+        kalman_handler_z->state_estimate.v[0];
 }
 
 // Function to check if there is a new measurement received

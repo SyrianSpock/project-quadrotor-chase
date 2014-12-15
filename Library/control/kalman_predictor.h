@@ -24,40 +24,38 @@ extern "C" {
 #define FALSE 0
 #define NULL 0
 
+typedef struct kalman_handler_t {
+    vector_2_t * state_estimate;
+    matrix_2x2_t * state_estimate_covariance;
+    matrix_2x2_t * process_noise_covariance;
+    matrix_2x2_t * design_matrix;
+    matrix_2x2_t * measurement_covariance;
+} kalman_handler_t;
+
 uint8_t kalman_init(
-            vector_2_t * state_estimate,
-            matrix_2x2_t * state_estimate_covariance,
-            matrix_2x2_t * process_noise_covariance,
-            matrix_2x2_t * design_matrix,
+            kalman_handler_t * kalman_handler,
+            const vector_2_t measurement_variance,
             const float max_acc,
             const float delta_t);
 
 uint8_t kalman_predict(
-            vector_2_t * state_estimate,
-            matrix_2x2_t * state_estimate_covariance,
-            const matrix_2x2_t process_noise_covariance,
+            kalman_handler_t * kalman_handler,
             const float delta_t);
 
 uint8_t kalman_correct(
-            vector_2_t * state_estimate,
-            matrix_2x2_t * state_estimate_covariance,
+            kalman_handler_t * kalman_handler,
             vector_2_t * last_measurement,
-            const matrix_2x2_t measurement_covariance,
-            const matrix_2x2_t design_matrix,
             track_following_t* track_following);
 
 uint8_t kalman_update_measurement_residual(
+            kalman_handler_t * kalman_handler,
             vector_2_t * measurement_residual,
             vector_2_t * last_measurement,
-            const vector_2_t state_estimate,
-            const matrix_2x2_t design_matrix,
             track_following_t * track_following);
 
 uint8_t kalman_compute_gain(
             matrix_2x2_t * kalman_gain,
-            matrix_2x2_t * state_estimate_covariance,
-            const matrix_2x2_t measurement_covariance,
-            const matrix_2x2_t design_matrix);
+            kalman_handler_t * kalman_handler);
 
 
 #ifdef __cplusplus

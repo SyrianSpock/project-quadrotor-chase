@@ -25,10 +25,10 @@ extern "C" {
 #define NULL 0
 
 typedef struct kalman_handler_t {
-    vector_2_t * state_estimate;
-    matrix_2x2_t * state_estimate_covariance;
-    matrix_2x2_t * design_matrix;
-    matrix_2x2_t * measurement_covariance;
+    vector_2_t state_estimate;
+    matrix_2x2_t state_estimate_covariance;
+    matrix_2x2_t design_matrix;
+    matrix_2x2_t measurement_covariance;
 } kalman_handler_t;
 
 uint8_t kalman_init(

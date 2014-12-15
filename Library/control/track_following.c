@@ -83,8 +83,11 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
     // Predict waypoint position with a Kalman algorithm
     track_following_kalman_predictor(track_following);
 
-    // Apply PID control
+    // Apply PID control on x & z
     track_following_WP_control_PID(track_following);
+
+    // Insure follower stays 5m below target
+    track_following->waypoint_handler->waypoint_following.pos[2] -= 5.0f;
 }
 
 // KALMAN PREDICTOR //
@@ -283,39 +286,11 @@ void track_following_WP_control_PID(track_following_t* track_following)
         .soft_zone_width = 0.0f
     };
 
-    static pid_controller_t track_following_pid_z =
-    {
-        .p_gain = 5.0f,
-        .clip_min = -100.0f,
-        .clip_max = 100.0f,
-        .integrator={
-            .pregain = 0.1f,
-            .postgain = 0.1f,
-            .accumulator = 0.0f,
-            .maths_clip = 20.0f,
-            .leakiness = 0.0f
-        },
-        .differentiator={
-            .gain = 0.1f,
-            .previous = 0.0f,
-            .LPF = 0.5f,
-            .maths_clip = 5.0f
-        },
-        .output = 0.0f,
-        .error = 0.0f,
-        .last_update = 0.0f,
-        .dt = 1,
-        .soft_zone_width = 0.0f
-    };
-
     if (track_following_pid_x.integrator.accumulator > 15.0f) {
         track_following_pid_x.integrator.accumulator = 0.0f;
     }
     if (track_following_pid_y.integrator.accumulator > 15.0f) {
         track_following_pid_y.integrator.accumulator = 0.0f;
-    }
-    if (track_following_pid_z.integrator.accumulator > 15.0f) {
-        track_following_pid_z.integrator.accumulator = 0.0f;
     }
 
     // Apply PID on x
@@ -325,11 +300,6 @@ void track_following_WP_control_PID(track_following_t* track_following)
     track_following->waypoint_handler->waypoint_following.pos[i] += offset;
     // Apply PID on y
     i = 1;
-    error = track_following_WP_distance_XYZ(track_following, i);
-    offset = pid_control_update(&track_following_pid_y, error);
-    track_following->waypoint_handler->waypoint_following.pos[i] += offset;
-    // Apply PID on z
-    i = 2;
     error = track_following_WP_distance_XYZ(track_following, i);
     offset = pid_control_update(&track_following_pid_y, error);
     track_following->waypoint_handler->waypoint_following.pos[i] += offset;

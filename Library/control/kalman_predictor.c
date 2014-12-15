@@ -16,9 +16,9 @@
 
 uint8_t kalman_init(
             kalman_handler_t * kalman_handler,
-            const vector_2_t measurement_variance,
-            const float max_acc,
-            const float delta_t)
+            vector_2_t * measurement_variance,
+            float max_acc,
+            float delta_t)
 {
     // Make sure the input is set as expected
     if(kalman_handler == NULL) {
@@ -28,7 +28,7 @@ uint8_t kalman_init(
     for(int i = 0; i < 2; i++) {
         kalman_handler->state_estimate->v[i]= 0.0f;
     }
-    *kalman_handler->state_estimate_covariance = zero_2x2;
+    *(kalman_handler->state_estimate_covariance) = zero_2x2;
 
     float sigma_x = (1.0f / 8.0f) * max_acc * delta_t * delta_t;
     float sigma_v = (1.0f / 4.0f) * max_acc * delta_t;
@@ -37,10 +37,10 @@ uint8_t kalman_init(
     kalman_handler->process_noise_covariance->v[1][0] = sigma_x * sigma_v;
     kalman_handler->process_noise_covariance->v[1][1] = sigma_v * sigma_v;
 
-    *kalman_handler->design_matrix = ident_2x2;
+    *(kalman_handler->design_matrix) = ident_2x2;
 
-    sigma_x = measurement_variance.v[0];
-    sigma_v = measurement_variance.v[1];
+    sigma_x = measurement_variance->v[0];
+    sigma_v = measurement_variance->v[1];
     kalman_handler->measurement_covariance->v[0][0] = sigma_x * sigma_x;
     kalman_handler->measurement_covariance->v[0][1] = sigma_x * sigma_v;
     kalman_handler->measurement_covariance->v[1][0] = sigma_x * sigma_v;
@@ -51,7 +51,7 @@ uint8_t kalman_init(
 
 uint8_t kalman_predict(
             kalman_handler_t * kalman_handler,
-            const float delta_t)
+            float delta_t)
 {
     // Make sure the input is set as expected
     if(kalman_handler == NULL) {
@@ -66,19 +66,19 @@ uint8_t kalman_predict(
             {delta_t, 1.0f}} };
 
     // Predict state estimate
-    *kalman_handler->state_estimate =
-        mvmul2(state_propagation_matrix, *kalman_handler->state_estimate);
+    *(kalman_handler->state_estimate) =
+        mvmul2(state_propagation_matrix, *(kalman_handler->state_estimate));
 
     // Predict state estimate covariance
-    *kalman_handler->state_estimate_covariance =
-        mmul2(*kalman_handler->state_estimate_covariance,
+    *(kalman_handler->state_estimate_covariance) =
+        mmul2(*(kalman_handler->state_estimate_covariance),
               state_propagation_matrix_trans);
-    *kalman_handler->state_estimate_covariance =
+    *(kalman_handler->state_estimate_covariance) =
         mmul2(state_propagation_matrix,
-              *kalman_handler->state_estimate_covariance);
-    *kalman_handler->state_estimate_covariance =
-        madd2(*kalman_handler->state_estimate_covariance,
-              *kalman_handler->process_noise_covariance);
+              *(kalman_handler->state_estimate_covariance));
+    *(kalman_handler->state_estimate_covariance) =
+        madd2(*(kalman_handler->state_estimate_covariance),
+              *(kalman_handler->process_noise_covariance));
 
     return 1;
 }
@@ -106,18 +106,19 @@ uint8_t kalman_correct(
     // Compute the new optimal Kalman gain
     kalman_compute_gain(
         kalman_handler,
-		&kalman_gain);
+        &kalman_gain);
 
     // Correct state estimate according to new measurement
-    *kalman_handler->state_estimate =
-        vadd2(*kalman_handler->state_estimate,
+    *(kalman_handler->state_estimate) =
+        vadd2(*(kalman_handler->state_estimate),
               mvmul2(kalman_gain, measurement_residual));
 
     // Correct state estimate covariance according to new measurement
     *kalman_handler->state_estimate_covariance =
         mmul2(
-            msub2(ident_2x2, mmul2(kalman_gain, *kalman_handler->design_matrix)),
-            *kalman_handler->state_estimate_covariance);
+            msub2(ident_2x2, mmul2(kalman_gain,
+                                   *(kalman_handler->design_matrix))),
+            *(kalman_handler->state_estimate_covariance));
 
     return 1;
 }
@@ -135,8 +136,8 @@ uint8_t kalman_update_measurement_residual(
 
     // Compute measurement residual according to new measurement
     *measurement_residual =
-        vsub2(*last_measurement, mvmul2(*kalman_handler->design_matrix,
-                                        *kalman_handler->state_estimate));
+        vsub2(*last_measurement, mvmul2(*(kalman_handler->design_matrix),
+                                        *(kalman_handler->state_estimate)));
 
     return 1;
 }
@@ -151,9 +152,9 @@ uint8_t kalman_compute_gain(
     }
 
     // As H = Identity, we can simplify the gain computation
-    *kalman_gain = mmul2(*kalman_handler->state_estimate_covariance,
-                         inv2(madd2(*kalman_handler->state_estimate_covariance,
-                                    *kalman_handler->measurement_covariance)));
+    *kalman_gain = mmul2(*(kalman_handler->state_estimate_covariance),
+                         inv2(madd2(*(kalman_handler->state_estimate_covariance),
+                                    *(kalman_handler->measurement_covariance))));
 
     return 1;
 }

@@ -34,13 +34,13 @@ typedef struct kalman_handler_t {
 
 uint8_t kalman_init(
             kalman_handler_t * kalman_handler,
-            const vector_2_t measurement_variance,
-            const float max_acc,
-            const float delta_t);
+            vector_2_t * measurement_variance,
+            float max_acc,
+            float delta_t);
 
 uint8_t kalman_predict(
             kalman_handler_t * kalman_handler,
-            const float delta_t);
+            float delta_t);
 
 uint8_t kalman_correct(
             kalman_handler_t * kalman_handler,
@@ -55,7 +55,7 @@ uint8_t kalman_update_measurement_residual(
 
 uint8_t kalman_compute_gain(
             kalman_handler_t * kalman_handler,
-			matrix_2x2_t * kalman_gain);
+            matrix_2x2_t * kalman_gain);
 
 
 #ifdef __cplusplus

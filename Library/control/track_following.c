@@ -111,9 +111,9 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     if(!kalman_init_done) {
         // Measurement variance that estimates GPS error
-        vector_2_t measurement_variance_x = {.v={3.0f, 0.5f} };
-        vector_2_t measurement_variance_y = {.v={3.0f, 0.5f} };
-        vector_2_t measurement_variance_z = {.v={1.0f, 0.2f} };
+        vector_2_t measurement_variance_x = {.v={3.0f, 0.5f}};
+        vector_2_t measurement_variance_y = {.v={3.0f, 0.5f}};
+        vector_2_t measurement_variance_z = {.v={1.0f, 0.2f}};
         // Initialise Kalman paremeters
         kalman_init(&kalman_handler_x, measurement_variance_x, max_acc, delta_t);
         kalman_init(&kalman_handler_y, measurement_variance_y, max_acc, delta_t);

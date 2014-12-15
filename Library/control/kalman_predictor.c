@@ -26,7 +26,7 @@ uint8_t kalman_init(
     }
 
     for(int i = 0; i < 2; i++) {
-        kalman_handler->state_estimate->v[i]= 0.0f;
+        kalman_handler->state_estimate.v[i]= 0.0f;
     }
     kalman_handler->state_estimate_covariance = zero_2x2;
 

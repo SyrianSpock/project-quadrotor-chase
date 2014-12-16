@@ -37,15 +37,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  16 .debug_line   0000cbd2  00000000  00000000  0005a29b  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_frame  00009290  00000000  00000000  00066e70  2**2
+ 17 .debug_frame  0000928c  00000000  00000000  00066e70  2**2
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    000030f5  00000000  00000000  00070100  2**0
+ 18 .debug_str    000030f5  00000000  00000000  000700fc  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .debug_loc    0000bb38  00000000  00000000  000731f5  2**0
+ 19 .debug_loc    0000bb38  00000000  00000000  000731f1  2**0
                   CONTENTS, READONLY, DEBUGGING
  20 .stack        00001000  0000f000  0000f000  00000400  2**0
                   ALLOC
- 21 .debug_ranges 00000e58  00000000  00000000  0007ed2d  2**0
+ 21 .debug_ranges 00000e58  00000000  00000000  0007ed29  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .reset:
@@ -8385,7 +8385,7 @@ Disassembly of section .text:
 80007c5e:	7a 38       	ld.w	r8,sp[0xc]
 
 80007c60 <kalman_init>:
-80007c60:	eb cd 40 40 	pushm	r6,lr
+80007c60:	eb cd 00 40 	pushm	r6
 80007c64:	4a 56       	lddpc	r6,80007cf8 <kalman_init+0x98>
 80007c66:	1e 26       	rsub	r6,pc
 80007c68:	58 0c       	cp.w	r12,0
@@ -8405,22 +8405,22 @@ Disassembly of section .text:
 80007c84:	99 b8       	st.w	r12[0x2c],r8
 80007c86:	ec f9 13 00 	ld.w	r9,r6[4864]
 80007c8a:	f8 ca ff d0 	sub	r10,r12,-48
-80007c8e:	72 0e       	ld.w	lr,r9[0x0]
-80007c90:	95 0e       	st.w	r10[0x0],lr
-80007c92:	72 1e       	ld.w	lr,r9[0x4]
-80007c94:	95 1e       	st.w	r10[0x4],lr
-80007c96:	72 2e       	ld.w	lr,r9[0x8]
-80007c98:	95 2e       	st.w	r10[0x8],lr
-80007c9a:	72 3e       	ld.w	lr,r9[0xc]
-80007c9c:	95 3e       	st.w	r10[0xc],lr
+80007c8e:	72 0b       	ld.w	r11,r9[0x0]
+80007c90:	95 0b       	st.w	r10[0x0],r11
+80007c92:	72 1b       	ld.w	r11,r9[0x4]
+80007c94:	95 1b       	st.w	r10[0x4],r11
+80007c96:	72 2b       	ld.w	r11,r9[0x8]
+80007c98:	95 2b       	st.w	r10[0x8],r11
+80007c9a:	72 3b       	ld.w	r11,r9[0xc]
+80007c9c:	95 3b       	st.w	r10[0xc],r11
 80007c9e:	f8 ca ff c0 	sub	r10,r12,-64
 80007ca2:	2f 09       	sub	r9,-16
-80007ca4:	72 0e       	ld.w	lr,r9[0x0]
-80007ca6:	95 0e       	st.w	r10[0x0],lr
-80007ca8:	72 1e       	ld.w	lr,r9[0x4]
-80007caa:	95 1e       	st.w	r10[0x4],lr
-80007cac:	72 2e       	ld.w	lr,r9[0x8]
-80007cae:	95 2e       	st.w	r10[0x8],lr
+80007ca4:	72 0b       	ld.w	r11,r9[0x0]
+80007ca6:	95 0b       	st.w	r10[0x0],r11
+80007ca8:	72 1b       	ld.w	r11,r9[0x4]
+80007caa:	95 1b       	st.w	r10[0x4],r11
+80007cac:	72 2b       	ld.w	r11,r9[0x8]
+80007cae:	95 2b       	st.w	r10[0x8],r11
 80007cb0:	fc 19 3f 80 	movh	r9,0x3f80
 80007cb4:	f9 49 00 4c 	st.w	r12[76],r9
 80007cb8:	e0 69 cc cd 	mov	r9,52429
@@ -8434,12 +8434,12 @@ Disassembly of section .text:
 80007cd8:	f9 48 00 68 	st.w	r12[104],r8
 80007cdc:	f9 48 00 6c 	st.w	r12[108],r8
 80007ce0:	f9 48 00 70 	st.w	r12[112],r8
-80007ce4:	fc 18 3e 80 	movh	r8,0x3e80
-80007ce8:	e5 a2 0b b8 	cop	cp0,cr11,cr11,cr8,0x44
-80007cec:	f9 4b 00 74 	st.w	r12[116],r11
+80007ce4:	e0 68 cc cd 	mov	r8,52429
+80007ce8:	ea 18 3d cc 	orh	r8,0x3dcc
+80007cec:	f9 48 00 74 	st.w	r12[116],r8
 80007cf0:	30 1c       	mov	r12,1
-80007cf2:	e3 cd 80 40 	ldm	sp++,r6,pc
-80007cf6:	00 00       	add	r0,r0
+80007cf2:	e3 cd 00 40 	ldm	sp++,r6
+80007cf6:	5e fc       	retal	r12
 80007cf8:	80 00       	ld.sh	r0,r0[0x0]
 80007cfa:	7a ea       	ld.w	r10,sp[0x38]
 

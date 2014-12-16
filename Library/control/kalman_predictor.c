@@ -34,7 +34,7 @@ uint8_t kalman_init(
     kalman_handler->design_matrix.v[2][2] = - 0.4f;
 
     kalman_handler->measurement_covariance = zero_3x3;
-    kalman_handler->measurement_covariance.v[2][2] = max_acc / 4.0f;
+    kalman_handler->measurement_covariance.v[2][2] = 0.1f;
 
     return 1;
 }

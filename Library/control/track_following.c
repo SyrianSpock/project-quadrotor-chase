@@ -86,9 +86,6 @@ void track_following_improve_waypoint_following(track_following_t* track_followi
 
     // Apply PID control on x & y
     track_following_WP_control_PID(track_following);
-
-    // Insure follower stays 5m below target
-    track_following->waypoint_handler->waypoint_following.pos[2] -= 5.0f;
 }
 
 

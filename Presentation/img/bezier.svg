@@ -151,15 +151,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="162.90826"
+     inkscape:cx="105.32957"
      inkscape:cy="55.985757"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1436"
      inkscape:window-height="855"
-     inkscape:window-x="349"
-     inkscape:window-y="10"
+     inkscape:window-x="81"
+     inkscape:window-y="46"
      inkscape:window-maximized="0"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -402,5 +402,28 @@
          sodipodi:type="arc"
          transform="matrix(0.45817331,0,0,0.45817331,296.33448,107.5936)" />
     </g>
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path3169"
+       d="m 129.29953,166.45841 c 48.47079,24.87638 61.31668,35.98966 57.57869,110.10663"
+       style="fill:none;stroke:#969696;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4, 4;stroke-dashoffset:0" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;line-height:100%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="187.77078"
+       y="285.7634"
+       id="text3975"
+       sodipodi:linespacing="100%"><tspan
+         id="tspan3977"
+         sodipodi:role="line"
+         x="187.77078"
+         y="285.7634"
+         style="font-size:9px;text-align:center;line-height:100%;text-anchor:middle;fill:#646464;fill-opacity:1">without</tspan><tspan
+         sodipodi:role="line"
+         x="187.77078"
+         y="294.7634"
+         style="font-size:9px;text-align:center;line-height:100%;text-anchor:middle;fill:#646464;fill-opacity:1"
+         id="tspan3979">Bézier</tspan></text>
   </g>
 </svg>

@@ -186,7 +186,7 @@ void central_data_init()
     navigation_config_t nav_config =
     {
         .dist2vel_gain = 0.7f,
-        .cruise_speed = 3.0f,
+        .cruise_speed = 3.5f,
         .max_climb_rate = 1.0f,
         .soft_zone_size = 0.0f,
         .alt_lpf = 0.0f,

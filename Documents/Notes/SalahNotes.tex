@@ -1,0 +1,469 @@
+\documentclass[12pt]{article}
+\usepackage{times}
+\usepackage{mathtools}
+\usepackage[toc,page]{appendix}
+\usepackage[]{algorithm2e}
+\usepackage[super]{nth}
+
+\topmargin 0.0cm
+\oddsidemargin 0.2cm
+\textwidth 16cm
+\textheight 21cm
+\footskip 1.0cm
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\title{Kalman approach for position prediction in an undersampled tracking problem}
+\author{Salah-Eddine Missri}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+Idea : Use a Kalman filter as a predictor, with the prediction loop running at a rate faster than the correction loop (aka update loop) so waypoints can be extrapolated from measurements even though we don't receive data.
+\end{abstract}
+
+
+\section{Kalman Filter summary}
+
+\subsection{Prediction steps}
+
+The first step is to predict the a priori state estimate
+\begin{equation}
+\hat{\mathbf{x}}_{k\mid k-1} = \mathbf{F}_{k}\hat{\mathbf{x}}_{k-1\mid k-1}
+\end{equation}
+Where $\hat{\mathbf{x}}_{k\mid k-1}$ is the estimate of the state vector at iteration $k$, with iteration $k$ not included.
+$\mathbf{F}_{k}$ is the state propagation matrix for iteration $k$ and $\hat{\mathbf{x}}_{k-1\mid k-1}$ is the estimate of the state vector at iteration $k-1$, with iteration $k-1$ included.
+Notice that in our case, the command $u$ is modeled as noise that's why it's absent from the equation.
+
+The second step is to predict the a priori estimate covariance
+\begin{equation}
+\mathbf{P}_{k\mid k-1} = \mathbf{F}_{k} \mathbf{P}_{k-1\mid k-1} \mathbf{F}_{k}^{\text{T}} + \mathbf{Q}_{k}
+\end{equation}
+$\mathbf{P}_{k\mid k-1}$ is the parameter covariance matrix at iteration $k$, with iteration $k$ not included.
+$\mathbf{Q}_{k}$ is the process covariance matrix (aka state propagation estimate error).
+
+\subsection{Update steps}
+
+In order to compute the optimal Kalman gain $\mathbf{K}_k$, we first need to compute the measurement residual $\tilde{\mathbf{y}}_k$ and the residual covariance $\mathbf{S}_k$
+\begin{equation}
+\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k\hat{\mathbf{x}}_{k\mid k-1}
+\label{residual_eq}
+\end{equation}
+\begin{equation}
+\mathbf{S}_k = \mathbf{H}_k \mathbf{P}_{k\mid k-1} \mathbf{H}_k^T + \mathbf{R}_k
+\label{residual_cov_eq}
+\end{equation}
+\begin{equation}
+\mathbf{K}_k = \mathbf{P}_{k\mid k-1}\mathbf{H}_k^T \mathbf{S}_k^{-1}
+\label{kalman_gain_eq}
+\end{equation}
+Where $\mathbf{z}_k$ is the measurement.
+$\mathbf{H}_k$ is the design matrix that maps the state $\mathbf{x}$ into the measurement space and is defined such that $\mathbf{z} = \mathbf{H}\mathbf{x}$.
+$\mathbf{R}_k$ is the measurement covariance matrix
+
+The last two equations can be compressed into a more compact equation
+\begin{equation}
+\mathbf{K}_k = \mathbf{P}_{k\mid k-1}\mathbf{H}_k^T (\mathbf{H}_k \mathbf{P}_{k\mid k-1} \mathbf{H}_k^T + \mathbf{R}_k)^{-1}
+\end{equation}
+
+Once we have the optimal Kalman gain, we correct (update) the estimates with measurement data.
+The updated a posteriori state estimate is therefore given by
+\begin{equation}
+\hat{\mathbf{x}}_{k\mid k} = \hat{\mathbf{x}}_{k\mid k-1} + \mathbf{K}_k\tilde{\mathbf{y}}_k
+\label{update_state_eq}
+\end{equation}
+
+And the updated a posteriori estimate covariance is given by
+\begin{equation}
+\mathbf{P}_{k|k} = (\mathbf{I} - \mathbf{K}_k \mathbf{H}_k) \mathbf{P}_{k|k-1}
+\label{update_state_cov_eq}
+\end{equation}
+$\mathbf{I}$ being of course the identity matrix
+
+\subsection{Checklist}
+
+\begin{itemize}
+\item Choice of state vector components $\mathbf{x}$
+\item Choice of measurements $\mathbf{z}$
+\item Description of measurement noise $\mathbf{R}$
+\item Choice of design matrix $\mathbf{H}$
+\item Choice of state propagation matrix $\mathbf{F}$ and its associated covariance matrix $\mathbf{Q}$
+\item Initial setup conditions $ $
+\end{itemize}
+
+\subsection{Decoupling the Kalman predictor}
+Our quadrotor tracking problem can be simplified into a $3D$ position prediction problem.
+The quadrotor can be considered as a point moving in a $3D$ plane, we consider that it has three degrees of freedom .
+We observed that the axis x, y and z can be treated separately, therefore we can use our Kalman predictor on the axis separately.
+
+\section{Constant velocity motion model}
+
+\subsection{State vector choice}
+By definition, the state of a deterministic dynamic system is the smallest vector that fully sums up the past of the system.
+Therefore, knowledge of the state should allow theoretically to predict the future outputs of the deterministic system.
+
+So we can take as state
+\begin{equation}
+\mathbf{x} =
+    \begin{pmatrix}
+        x\\
+        \dot{x}\\
+    \end{pmatrix}
+\end{equation}
+Where $x$ is the position that defines an object in the x axis and $\dot{x}$ the associated linear velocity.
+Refering to classical mechanics equations, position and velocity should allow us to predict the system's behaviour.
+
+\subsection{Measurement considerations}
+The measurement $z$ is considered to be the data received from the other quadrotor. This mainly contains positions and velocities
+\begin{equation}
+\mathbf{z} =
+    \begin{pmatrix}
+        x\\
+        \dot{x}\\
+    \end{pmatrix}
+\label{measurement_cvmm}
+\end{equation}
+
+Then, state space and measurement space can be linked through a design matrix $\mathbf{H}$ such that $\mathbf{z} = \mathbf{H}\mathbf{x}$ with
+\begin{equation}
+\mathbf{H^{-1}} =
+    \begin{pmatrix}
+        1 & 0 \\
+        0 & 1 1\\
+    \end{pmatrix}
+\iff
+\mathbf{H} =
+    \begin{pmatrix}
+        1 & 0 \\
+        0 & 1 \\
+    \end{pmatrix}
+\end{equation}
+
+Otherwise, the error of the measurement could be modeled with a gaussian profile considering the GPS noise, but we can first suppose that the measurement is perfect and try to implement our Kalman predictor with no measurement noise.
+So we fix
+\begin{equation}
+\mathbf{R} = \mathbf{0}
+\end{equation}
+
+As $\mathbf{R} = \mathbf{0}$, this back propagates into the following equations.
+Equations \ref{residual_cov_eq} and \ref{kalman_gain_eq} become
+\begin{equation}
+\mathbf{S}_k = \mathbf{H}_k \mathbf{P}_{k\mid k-1} \mathbf{H}_k^T
+\label{res_cov_matrix_mod_eq}
+\end{equation}
+\begin{equation}
+\mathbf{K}_k
+= \mathbf{P}_{k\mid k-1}\mathbf{H}_k^T (\mathbf{H}_k \mathbf{P}_{k\mid k-1} \mathbf{H}_k^T)^{-1}
+= \mathbf{P}_{k\mid k-1}\mathbf{H}_k^T {\mathbf{H}_k^T}^{-1} \mathbf{P}_{k\mid k-1}^{-1} \mathbf{H}_k^{-1}
+= \mathbf{H}_k^{-1}
+\label{kalman_gain_mod_eq}
+\end{equation}
+
+Equations \ref{update_state_eq} and \ref{update_state_cov_eq} become
+\begin{equation}
+\hat{\mathbf{x}}_{k\mid k}
+= \hat{\mathbf{x}}_{k\mid k-1} + \mathbf{H}_k^{-1}\tilde{\mathbf{y}}_k
+= \hat{\mathbf{x}}_{k\mid k-1} + \mathbf{H}_k^{-1}(\mathbf{z}_k - \mathbf{H}_k\hat{\mathbf{x}}_{k\mid k-1})
+%= \hat{\mathbf{x}}_{k\mid k-1} + \mathbf{H}_k^{-1}\mathbf{z}_k - \hat{\mathbf{x}}_{k\mid k-1}
+= \mathbf{H}_k^{-1}\mathbf{z}_k
+\label{update_state_mod_eq}
+\end{equation}
+\begin{equation}
+\mathbf{P}_{k|k}
+= (\mathbf{I} - \mathbf{K}_k \mathbf{H}_k) \mathbf{P}_{k|k-1}
+= (\mathbf{I} - \mathbf{H}_k^{-1} \mathbf{H}_k) \mathbf{P}_{k|k-1}
+= \mathbf{0}
+\label{update_state_cov_mod_eq}
+\end{equation}
+These equations (\ref{update_state_mod_eq} and \ref{update_state_cov_mod_eq}) show that as we consider the measurement to be perfect, each time we correct the prediction using the measurement, we are in fact overwriting the state with the measured state.
+And the state covariance matrix is reset to $\mathbf{0}$ as we consider the measured state to be perfect.
+
+\subsection{State propagation}
+As we want to predict the position of the targeted quadrotor between two measurements of its actual position, we will consider a constant velocity model.
+Between two measurements, we have to solve a simple differential equation to extrapolate positions from the last measurement data, this can be done using the Euler method which yields
+\begin{equation}
+\left\{
+    \begin{array}{l}
+    x_k = x_{k-1} + \dot{x}_{k-1}\Delta{t}
+    \end{array}
+\right.
+\end{equation}
+
+Therefore, state propagation $\mathbf{F}$ would be
+\begin{equation}
+\mathbf{F} =
+    \begin{pmatrix}
+        1 & \Delta{t} \\
+        0 & 1 \\
+    \end{pmatrix}
+\end{equation}
+
+As we assumed a constant velocity model between measurements, a change in velocity causes errors.
+This can be taken into account through the state progragation covariance matrix $\mathbf{Q}$ that would depend on the maximal accelerations that the quadrotor is able to perform.
+Once again, using the Euler method, we can get the errors through linear integration of acceleration values.
+To fit $\sim 99.9\%$ of the case, we consider that the maximal acceleration cases cover $4\sigma$, so
+\begin{equation}
+\left\{
+    \begin{array}{l}
+    4 \sigma_x = \frac{1}{2} \ddot{x}_{max} \Delta{t}^2 \\
+    4 \sigma_{\dot{x}} = \ddot{x}_{max} \Delta{t} \\
+    \end{array}
+\right.
+\Leftrightarrow
+\left\{
+    \begin{array}{l}
+    \sigma_x = \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 \\
+    \sigma_{\dot{x}} = \frac{1}{4} \ddot{x}_{max} \Delta{t} \\
+    \end{array}
+\right.
+\end{equation}
+
+The resulting state propagation error matrix is given by
+\begin{equation}
+\mathbf{Q}
+=
+\begin{pmatrix}
+    \sigma_x & \sigma_v \\
+\end{pmatrix}
+\begin{pmatrix}
+    \sigma_x \\
+    \sigma_v \\
+\end{pmatrix}
+=
+\begin{pmatrix}
+    \sigma_x^2        & \sigma_x \sigma_v \\
+    \sigma_x \sigma_v & \sigma_x^2 \\
+\end{pmatrix}
+=
+\frac{1}{16} \ddot{x}_{max}^2
+\begin{pmatrix}
+    \frac{1}{4} \Delta{t}^4 & \frac{1}{2} \Delta{t}^3 \\
+    \frac{1}{2} \Delta{t}^3 & \Delta{t}^2\\
+\end{pmatrix}
+\end{equation}
+To set this, we only need one parameter: $\ddot{x}_{max}$.
+
+\subsection{Implementation}
+
+\begin{algorithm}[H]
+ %// initialisation
+ initialisation\;
+
+ \While{true}{
+  %// prediction loop\;
+  $\hat{\mathbf{x}}_{k\mid k-1} = \mathbf{F}_{k}\hat{\mathbf{x}}_{k-1\mid k-1}$
+  // compute the a priori state estimate\;
+  $\mathbf{P}_{k\mid k-1} = \mathbf{F}_{k} \mathbf{P}_{k-1\mid k-1} \mathbf{F}_{k}^{\text{T}} + \mathbf{Q}_{k}$
+  // compute the a priori estimate covariance\;
+  %// correction (update) loop\;
+  \If{new measurement taken}{
+   $\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k\hat{\mathbf{x}}_{k\mid k-1}$
+   // update measurement residual\;
+   $\mathbf{K}_k = \mathbf{H}_k^{-1}$
+   // compute optimal Kalman gain\;
+   $\hat{\mathbf{x}}_{k\mid k} = \mathbf{H}_k^{-1}\mathbf{z}_k$
+   // correct the a posteriori state estimate\;
+   $\mathbf{P}_{k|k} = \mathbf{0}$
+   // correct the a posteriori estimate covariance\;
+   }
+  $\text{new waypoint} = \hat{\mathbf{x}}_k$
+  // set current state estimate as waypoint\;
+ }
+ \caption{Pseudocode for Kalman predictor implementation with simplified equations}
+\end{algorithm}
+
+
+\section{Constant acceleration motion model}
+A constant velocity motion model may be a too simple approximation of the physical model of the quadrotor's motion.
+Therefore, a more precise model that allow non linear motion can be considered, here we propose a constant acceleration motion model.
+
+\subsection{State vector choice}
+To account for acceleration, we simply add it to our state vector.
+The previous $4D$ problem becomes a $6D$ problem
+\begin{equation}
+\mathbf{x} =
+    \begin{pmatrix}
+        x\\
+        \dot{x}\\
+        \ddot{x}\\
+    \end{pmatrix}
+\end{equation}
+Where $\ddot{x}$ is the linear accelerations.
+
+\subsection{Measurement considerations}
+As our measurement does not contain acceleration information (see equation \ref{measurement_cvmm}), we need to guesstimate the acceleration from the measurement.
+Therefore, we propose to guesstimate acceleration from the velocity.
+For this, we need to add the previous velocity of the target to the measurement
+\begin{equation}
+\mathbf{z}_k =
+    \begin{pmatrix}
+        x_k\\
+        \dot{x}_k\\
+        \dot{x}_{k-1}\\
+    \end{pmatrix}
+\label{measurement_cvmm}
+\end{equation}
+
+That allows us to infere acceleration using the Euler method
+\begin{equation}
+\left\{
+    \begin{array}{l}
+    \ddot{x}_k = \frac{\dot{x}_k - \dot{x}_{k-1}}{\Delta{t}}
+    \end{array}
+\right.
+\end{equation}
+So the design matrix $\mathbf{H}$ becomes
+\begin{equation}
+\mathbf{H^{-1}} =
+    \begin{pmatrix}
+        1 & 0 & 0 \\
+        0 & 1 & 0 \\
+        0 & \frac{1}{\Delta{t}} & -\frac{1}{\Delta{t}} \\
+    \end{pmatrix}
+\iff
+\mathbf{H} =
+    \begin{pmatrix}
+        1 & 0 & 0 \\
+        0 & 1 & 0 \\
+        0 & 1 & -\Delta{t} \\
+    \end{pmatrix}
+\end{equation}
+With $\Delta{t}$ the time step at which the loop is ran.
+
+As we guesstimate the acceleration, we cannot consider that $\mathbf{R} = \mathbf{0}$.
+To account for the error on the acceleration, we consider that to fit $\sim 99.9\%$ of the case, we consider that the maximal acceleration cases cover $4\sigma$.
+So $\sigma = \frac{1}{4}\ddot{x}_{max}$, and R is given by
+\begin{equation}
+\mathbf{R} =
+    \begin{pmatrix}
+        0 & 0 & 0 \\
+        0 & 0 & 0 \\
+        0 & 0 & \frac{1}{4}\ddot{x}_{max} \\
+    \end{pmatrix}
+\end{equation}
+
+
+\subsection{State propagation}
+Similarly, between two measurements, we have to solve a simple differential equation to extrapolate positions from the last measurement data, this can be done using a \nth{2} degree Taylor expansion, and a \nth{1} degree Taylor expansion to predict the velocity which yields
+\begin{equation}
+\left\{
+    \begin{array}{l}
+    x_k
+    = x_{k-1} + \dot{x}_{k-1}\Delta{t} + \frac{1}{2}\ddot{x}_{k-1}\Delta{t}^2 \\
+    \dot{x}_k
+    = \dot{x}_{k-1} + \ddot{x}_{k-1}\Delta{t} \\
+    \end{array}
+\right.
+\end{equation}
+
+Therefore, state propagation $\mathbf{F}$ would be
+\begin{equation}
+\mathbf{F} =
+    \begin{pmatrix}
+        1 & \Delta{t} & \frac{1}{2}\Delta{t}^2 \\
+        0 & 1         & \Delta{t} \\
+        0 & 0         & 1 \\
+    \end{pmatrix}
+\end{equation}
+
+As we assumed a constant acceleration model between measurements, a change in velocity causes errors.
+This can be taken into account through the state progragation covariance matrix $\mathbf{Q}$ that would depend on the maximal accelerations that the quadrotor is able to perform.
+Once again, using the Euler method, we can get the errors through linear integration of acceleration values.
+To fit $\sim 99.9\%$ of the case, we consider that the maximal acceleration cases cover $4\sigma$, so
+\begin{equation}
+\left\{
+    \begin{array}{l}
+    4 \sigma_x = \frac{1}{2} \ddot{x}_{max} \Delta{t}^2 \\
+    4 \sigma_{\dot{x}} = \ddot{x}_{max} \Delta{t} \\
+    4 \sigma_{\ddot{x}} = 0 \\
+    \end{array}
+\right.
+\Leftrightarrow
+\left\{
+    \begin{array}{l}
+    \sigma_x = \frac{1}{8} \ddot{x}_{max} \Delta{t}^2 \\
+    \sigma_{\dot{x}} = \frac{1}{4} \ddot{x}_{max} \Delta{t} \\
+    \sigma_{\ddot{x}} = 0 \\
+    \end{array}
+\right.
+\end{equation}
+We suppose that $\sigma_{\ddot{x}} = 0$, as we do not predict the acceleration, we only measure it and correct it, so the error is accounted in $\mathbf{R}$ as treated previously.
+
+The resulting state propagation error matrix is given by
+\begin{equation}
+\begin{split}
+\mathbf{Q}
+    & =
+    \begin{pmatrix}
+        \sigma_x^2                & \sigma_x \sigma_{\dot{x}} & 0 \\
+        \sigma_x \sigma_{\dot{x}} & \sigma_{\dot{x}}^2        & 0 \\
+        0                         & 0                         & 0 \\
+    \end{pmatrix}
+    \\
+    & =
+    \frac{1}{16} \ddot{x}_{max}^2
+    \begin{pmatrix}
+        \frac{1}{4} \Delta{t}^4 & \frac{1}{2} \Delta{t}^3 & 0 \\
+        \frac{1}{2} \Delta{t}^3 & \Delta{t}^2             & 0 \\
+        0                       & 0                       & 0 \\
+    \end{pmatrix}
+    \\
+\end{split}
+\end{equation}
+To set this, we only need one parameter: $\ddot{x}_{max}$.
+
+
+\subsection{Implementation}
+
+\begin{algorithm}[H]
+ %// initialisation
+ initialisation\;
+
+ \While{true}{
+  %// prediction loop\;
+  $\hat{\mathbf{x}}_{k\mid k-1} = \mathbf{F}_{k}\hat{\mathbf{x}}_{k-1\mid k-1}$
+  // compute the a priori state estimate\;
+  $\mathbf{P}_{k\mid k-1} = \mathbf{F}_{k} \mathbf{P}_{k-1\mid k-1} \mathbf{F}_{k}^{\text{T}} + \mathbf{Q}_{k}$
+  // compute the a priori estimate covariance\;
+  %// correction (update) loop\;
+  \If{new measurement taken}{
+   $\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k\hat{\mathbf{x}}_{k\mid k-1}$
+   // update measurement residual\;
+   $\mathbf{K}_k = \mathbf{P}_{k\mid k-1}\mathbf{H}_k^T (\mathbf{H}_k \mathbf{P}_{k\mid k-1} \mathbf{H}_k^T + \mathbf{R}_k)^{-1}$
+   // compute optimal Kalman gain\;
+   $\hat{\mathbf{x}}_{k\mid k} = \hat{\mathbf{x}}_{k\mid k-1} + \mathbf{K}_k\tilde{\mathbf{y}}_k$
+   // correct the a posteriori state estimate\;
+   $\mathbf{P}_{k|k} = (\mathbf{I} - \mathbf{K}_k \mathbf{H}_k) \mathbf{P}_{k|k-1}$
+   // correct the a posteriori estimate covariance\;
+   }
+  $\text{new waypoint} = \hat{\mathbf{x}}_k$
+  // set current state estimate as waypoint\;
+ }
+ \caption{Pseudocode for Kalman predictor implementation with general quations}
+\end{algorithm}
+
+
+\section{Results \& Discussion}
+
+\newpage
+\begin{appendices}
+
+\section{Notation index}
+\begin{tabular}{ll}
+$\hat{\mathbf{x}}$   & State estimate vector \\
+$\mathbf{F}$         & State propagation matrix \\
+$\mathbf{P}$         & State estimate covariance matrix \\
+$\mathbf{Q}$         & Process noise covariance matrix (State propagation error) \\
+$\mathbf{z}$         & Measurement \\
+$\tilde{\mathbf{y}}$ & Measurement residual \\
+$\mathbf{R}$         & Measurement covariance matrix \\
+$\mathbf{K}$         & Kalman gain \\
+$\mathbf{H}$         & Design matrix \\
+$\mathbf{S}$         & Residual covariance matrix \\
+\end{tabular}
+
+\end{appendices}
+
+\end{document}

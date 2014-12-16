@@ -153,10 +153,18 @@ uint8_t kalman_compute_gain(
         return 0;
     }
 
-    // As H = Identity, we can simplify the gain computation
-    *kalman_gain = mmul3(kalman_handler->state_estimate_covariance,
-                         inv3(madd3(kalman_handler->state_estimate_covariance,
-                                    kalman_handler->measurement_covariance)));
+    matrix_3x3_t design_matrix_trans = trans3(kalman_handler->design_matrix);
+
+    matrix_3x3_t residual_covariance =
+        madd3(
+            mmul3(kalman_handler->design_matrix,
+                  mmul3(kalman_handler->state_estimate_covariance,
+                        design_matrix_trans)),
+            kalman_handler->measurement_covariance);
+
+    *kalman_gain =
+        mmul3(kalman_handler->state_estimate_covariance,
+              mmul3(design_matrix_trans, inv3(residual_covariance)));
 
     return 1;
 }

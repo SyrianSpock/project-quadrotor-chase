@@ -259,10 +259,10 @@ void tasks_create_tasks()
 	scheduler_add_task(scheduler, 500000,	RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST , &tasks_led_toggle													, 0														, 10);
 
 	//comment line to test with other robot
-	scheduler_add_task(scheduler, MSG_PERIOD_SEC * 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_pack_msg			,(task_argument_t)&central_data->simu_gps_track			, 11);
+	//scheduler_add_task(scheduler, MSG_PERIOD_SEC * 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_pack_msg			,(task_argument_t)&central_data->simu_gps_track			, 11);
 
 	//comment line to test with other robot
-	scheduler_add_task(scheduler, 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_send_neighbor_heartbeat			,(task_argument_t)&central_data->simu_gps_track			, 12);
+	//scheduler_add_task(scheduler, 1000000, RUN_REGULAR, PERIODIC_ABSOLUTE, PRIORITY_LOWEST, (task_function_t)&simu_gps_track_send_neighbor_heartbeat			,(task_argument_t)&central_data->simu_gps_track			, 12);
 
 	scheduler_sort_tasks(scheduler);
 }

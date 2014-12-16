@@ -124,7 +124,7 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
-<        // Estimate acceleration using previous and current waypoint velocities
+        // Estimate acceleration using previous and current waypoint velocities
 	    last_measurement_x.v[2] =
 	        (track_following->neighbors->neighbors_list[0].velocity[0] \
 	        - last_measurement_x.v[1]) / 4.0f;
@@ -139,11 +139,11 @@ void track_following_kalman_predictor(track_following_t* track_following)
 	    last_measurement_x.v[0] =
 	        track_following->neighbors->neighbors_list[0].position[0];
 	    last_measurement_y.v[0] =
-	        track_followin.>neighbors->neighbors_list[0].position[1];
+	        track_following->neighbors->neighbors_list[0].position[1];
 	    last_measurement_z.v[0] =
-	        track_followin.>neighbors->neighbors_list[0].position[2];
+	        track_following->neighbors->neighbors_list[0].position[2];
 	    last_measurement_x.v[1] =
-	        track_followin.>neighbors->neighbors_list[0].velocity[0];
+	        track_following->neighbors->neighbors_list[0].velocity[0];
 	    last_measurement_y.v[1] =
 	        track_following->neighbors->neighbors_list[0].velocity[1];
 	    last_measurement_z.v[1] =

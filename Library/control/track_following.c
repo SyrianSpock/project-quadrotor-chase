@@ -143,11 +143,11 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Use Kalman prediction output as waypoint
     track_following->waypoint_handler->waypoint_following.pos[0] =
-        kalman_handler.state_estimate_x.v[0];
+        kalman_handler_x.state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] =
-        kalman_handler.state_estimate_y.v[0];
+        kalman_handler_y.state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[2] =
-        kalman_handler.state_estimate_z.v[0];
+        kalman_handler_z.state_estimate.v[0];
 }
 
 // Function to check if there is a new measurement received
@@ -178,7 +178,7 @@ void track_following_WP_control_PID(track_following_t* track_following)
 
     static pid_controller_t track_following_pid_x =
     {
-        .p_gain = 5.0f,
+        .p_gain = 2.0f,
         .clip_min = -100.0f,
         .clip_max = 100.0f,
         .integrator={
@@ -203,7 +203,7 @@ void track_following_WP_control_PID(track_following_t* track_following)
 
     static pid_controller_t track_following_pid_y =
     {
-        .p_gain = 5.0f,
+        .p_gain = 2.0f,
         .clip_min = -100.0f,
         .clip_max = 100.0f,
         .integrator={

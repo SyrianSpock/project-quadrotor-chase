@@ -96,7 +96,7 @@ void track_following_kalman_predictor(track_following_t* track_following)
 {
     // Kalman variables for x, y and z axis
     static kalman_handler_t kalman_handler_x, kalman_handler_y, kalman_handler_z;
-    static vector_2_t last_measurement_x, last_measurement_y, last_measurement_z;
+    static vector_3_t last_measurement_x, last_measurement_y, last_measurement_z;
     // Kalman parameters
     static float max_acc = 10.0f;
     static float delta_t = 0.0f;
@@ -110,14 +110,10 @@ void track_following_kalman_predictor(track_following_t* track_following)
     static bool kalman_init_done = FALSE;
 
     if(!kalman_init_done) {
-        // Measurement variance that estimates GPS error
-        vector_2_t gps_variance_x = {.v={3.0f, 0.3f}};
-        vector_2_t gps_variance_y = {.v={3.0f, 0.3f}};
-        vector_2_t gps_variance_z = {.v={0.0f, 0.1f}};
         // Initialise Kalman paremeters
-        kalman_init(&kalman_handler_x, &gps_variance_x, max_acc, delta_t);
-        kalman_init(&kalman_handler_y, &gps_variance_y, max_acc, delta_t);
-        kalman_init(&kalman_handler_z, &gps_variance_z, max_acc, delta_t);
+        kalman_init(&kalman_handler_x, max_acc, delta_t);
+        kalman_init(&kalman_handler_y, max_acc, delta_t);
+        kalman_init(&kalman_handler_z, max_acc, delta_t);
         kalman_init_done = TRUE;
     }
 

@@ -130,7 +130,7 @@ void track_following_kalman_predictor(track_following_t* track_following)
         */
         vector_2_t p1, p2, p3, p4; // Control points for Bezier interpolation
         vector_2_t bp; // Bezier estimated velocity
-        float t = 0.9f;
+        float t = 0.9f; // Bezier parameter
 
         // Control point 1 : previous measured waypoint
         p1.v[0] = last_measurement_x.v[0];
@@ -146,11 +146,11 @@ void track_following_kalman_predictor(track_following_t* track_following)
         p3.v[1] = p4.v[1] - track_following->neighbors->neighbors_list[0].velocity[1];
 
         // Compute estimated velocity according to Bezier interpolation
-        bp.v[0] = 3 * (1 - t) * (1 - t) * (p2.v[0] - p1.v[0]) \
-                  + 6 * (1 - t) * t * (p3.v[0] - p2.v[0]) \
+        bp.v[0] = 3 * (1 - t) * (1 - t) * (p2.v[0] - p1.v[0])
+                  + 6 * (1 - t) * t * (p3.v[0] - p2.v[0])
                   + 3 * t * t * (p4.v[0] - p3.v[0]);
-        bp.v[1] = 3 * (1 - t) * (1 - t) * (p2.v[1] - p1.v[1]) \
-                  + 6 * (1 - t) * t * (p3.v[1] - p2.v[1]) \
+        bp.v[1] = 3 * (1 - t) * (1 - t) * (p2.v[1] - p1.v[1])
+                  + 6 * (1 - t) * t * (p3.v[1] - p2.v[1])
                   + 3 * t * t * (p4.v[1] - p3.v[1]);
         bp.v[0] = bp.v[0] / 3.0f;
         bp.v[1] = bp.v[1] / 3.0f;

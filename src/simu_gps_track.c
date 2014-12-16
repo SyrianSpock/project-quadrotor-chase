@@ -1,42 +1,42 @@
 /*******************************************************************************
  * Copyright (c) 2009-2014, MAV'RIC Development Team
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
- * 
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- * this list of conditions and the following disclaimer in the documentation 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its contributors
  * may be used to endorse or promote products derived from this software without
  * specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
 /*******************************************************************************
  * \file simu_gps_track.c
- * 
+ *
  * \author MAV'RIC Team
  * \author Nicolas Dousse
- * 
+ *
  * \brief  This file simulates a GPS navigation track
- *   
+ *
  ******************************************************************************/
 
 
@@ -44,7 +44,7 @@
 #include "time_keeper.h"
 #include "print_util.h"
 
-#define TRACK 1
+#define TRACK 2
 
 #if TRACK == 0
 	#define SIZE_MAX_TABLE 302
@@ -70,9 +70,9 @@ task_return_t simu_gps_track_pack_msg(simu_gps_track_t* simu_gps_track)
 	{
 		simu_gps_track->i = 0;
 	}
-	
+
 	mavlink_message_t msg;
-	
+
 	mavlink_msg_global_position_int_pack(	1,
 											simu_gps_track->mavlink_stream->compid,
 											&msg,
@@ -85,20 +85,20 @@ task_return_t simu_gps_track_pack_msg(simu_gps_track_t* simu_gps_track)
 											simu_track_table[simu_gps_track->i].vy,
 											simu_track_table[simu_gps_track->i].vz,
 											simu_track_table[simu_gps_track->i].hdg);
-	
+
 	mavlink_stream_send(simu_gps_track->mavlink_stream,&msg);
-	
+
 	neighbors_selection_read_message_from_neighbors(simu_gps_track->neighbors, simu_gps_track->mavlink_stream->sysid, &msg);
-	
+
 	simu_gps_track->i+= MSG_PERIOD_SEC * 4;
-	
+
 	return TASK_RUN_SUCCESS;
 }
 
 void simu_gps_track_send_neighbor_heartbeat(simu_gps_track_t* simu_gps_track)
 {
 	mavlink_message_t msg;
-	
+
 	mavlink_msg_heartbeat_pack(	1,
 								simu_gps_track->mavlink_stream->compid,
 								&msg,
@@ -107,17 +107,17 @@ void simu_gps_track_send_neighbor_heartbeat(simu_gps_track_t* simu_gps_track)
 								MAV_MODE_GPS_NAVIGATION,
 								0,
 								MAV_STATE_ACTIVE);
-	
+
 	mavlink_stream_send(simu_gps_track->mavlink_stream,&msg);
 }
 
 void simu_gps_track_send_msg(simu_gps_track_t* simu_gps_track, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
-{	
+{
 	if (simu_gps_track->i >= SIZE_MAX_TABLE)
 	{
 		simu_gps_track->i = 0;
 	}
-	
+
 	mavlink_msg_global_position_int_pack(	1,
 											mavlink_stream->compid,
 											msg,
@@ -130,7 +130,7 @@ void simu_gps_track_send_msg(simu_gps_track_t* simu_gps_track, const mavlink_str
 											simu_track_table[simu_gps_track->i].vy,
 											simu_track_table[simu_gps_track->i].vz,
 											simu_track_table[simu_gps_track->i].hdg);
-	
+
 	simu_gps_track->i+= MSG_PERIOD_SEC * 4;
 }
 
@@ -139,7 +139,7 @@ void simu_gps_track_init(simu_gps_track_t* simu_gps_track, neighbors_t* neighbor
 	simu_gps_track->mavlink_stream = mavlink_stream;
 	simu_gps_track->neighbors = neighbors;
 	simu_gps_track->state = state;
-	
+
 	simu_gps_track->i = 0;
 
 	#if TRACK == 0

@@ -59,7 +59,7 @@
 
 #define RC_INPUT_SCALE 0.8
 ///< Thrust compensation for hover (relative to center position)
-#define THRUST_HOVER_POINT (-0.3f)
+#define THRUST_HOVER_POINT (-0.26f)
 
 ///< Define which configuration of the imu to use, depending on the autopilot ID
 #if MAVLINK_SYS_ID == 1

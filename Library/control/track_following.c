@@ -124,30 +124,54 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
-        // Estimate acceleration using previous and current waypoint velocities
-	    last_measurement_x.v[2] =
-	        (track_following->neighbors->neighbors_list[0].velocity[0] \
-	        - last_measurement_x.v[1]) / 4.0f;
-	    last_measurement_y.v[2] =
-	        (track_following->neighbors->neighbors_list[0].velocity[1] \
-	        - last_measurement_y.v[1]) / 4.0f;
-	    last_measurement_z.v[2] =
-	        (track_following->neighbors->neighbors_list[0].velocity[2] \
-	        - last_measurement_z.v[1]) / 4.0f;
+        /*
+            Use Bezier curve interpolation to get information about a previous
+            point velocity in order to compute a more accurate acceleration
+            on the x and y axis
+        */
+        vector_2_t p1, p2, p3, p4; // control points for Bezier interpolation
+        vector_2_t bp; // estimated velocity just before current measured waypoint
+        float t = 0.9f;
 
-	    // Get last waypoint data for x, y and z
-	    last_measurement_x.v[0] =
-	        track_following->neighbors->neighbors_list[0].position[0];
-	    last_measurement_y.v[0] =
-	        track_following->neighbors->neighbors_list[0].position[1];
-	    last_measurement_z.v[0] =
-	        track_following->neighbors->neighbors_list[0].position[2];
-	    last_measurement_x.v[1] =
-	        track_following->neighbors->neighbors_list[0].velocity[0];
-	    last_measurement_y.v[1] =
-	        track_following->neighbors->neighbors_list[0].velocity[1];
-	    last_measurement_z.v[1] =
-	        track_following->neighbors->neighbors_list[0].velocity[2];
+        // control point 1 : previous measured waypoint
+        p1.v[0] = last_measurement_x->v[0];
+        p1.v[1] = last_measurement_y->v[0];
+        // control point 2 : previous measured waypoint + velocity at that waypoint
+        p2.v[0] = p1.v[0] + last_measurement_x->v[1];
+        p2.v[1] = p1.v[1] + last_measurement_y->v[1];
+        // control point 3 : current measured waypoint
+        p4.v[0] = track_following->neighbors->neighbors_list[0].position[0];
+        p4.v[1] = track_following->neighbors->neighbors_list[0].position[1];
+        // control point 4 : previous measured waypoint
+        p3.v[0] = p4.v[0] - track_following->neighbors->neighbors_list[0].velocity[0];
+        p3.v[1] = p4.v[1] - track_following->neighbors->neighbors_list[0].velocity[1];
+
+        // compute estimated velocity according to Bezier interpolation
+        bp.v[0] = 3 * (1 - t) * (1 - t) * (p2.v[0] - p1.v[0]) \
+                  + 6 * (1 - t) * t * (p3.v[0] - p2.v[0]) \
+                  + 3 * t * t * (p4.v[0] - p3.v[0]);
+        bp.v[1] = 3 * (1 - t) * (1 - t) * (p2.v[1] - p1.v[1]) \
+                  + 6 * (1 - t) * t * (p3.v[1] - p2.v[1]) \
+                  + 3 * t * t * (p4.v[1] - p3.v[1]);
+
+        // Get Bezier velocity estimate as the previous velocity
+        last_measurement_x->v[2] = bp.v[0] / 3.0f;
+        last_measurement_y->v[2] = bp.v[1] / 3.0f;
+
+
+        // Get last waypoint data for x, y and z
+        last_measurement_x.v[0] =
+            track_following->neighbors->neighbors_list[0].position[0];
+        last_measurement_y.v[0] =
+            track_following->neighbors->neighbors_list[0].position[1];
+        last_measurement_z.v[0] =
+            track_following->neighbors->neighbors_list[0].position[2];
+        last_measurement_x.v[1] =
+            track_following->neighbors->neighbors_list[0].velocity[0];
+        last_measurement_y.v[1] =
+            track_following->neighbors->neighbors_list[0].velocity[1];
+        last_measurement_z.v[1] =
+            track_following->neighbors->neighbors_list[0].velocity[2];
         // Correct Kalman predictor with this new data
         kalman_correct(&kalman_handler_x, &last_measurement_x, track_following);
         kalman_correct(&kalman_handler_y, &last_measurement_y, track_following);

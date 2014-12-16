@@ -157,27 +157,28 @@ bool track_following_new_message_received(track_following_t* track_following)
     // Check if a new measurement has been received & set flag accordingly
     if(track_following->neighbors->neighbors_list[0].time_msg_received != last_measurement_time) {
         new_measurement_received = TRUE;
-        last_measurement_time = track_following->neighbors->neighbors_list[0].time_msg_received;
+        last_measurement_time =
+            track_following->neighbors->neighbors_list[0].time_msg_received;
     }
 
     return new_measurement_received;
 }
 
 void track_following_update_last_measurement(
-            vector_3_t * last_measurement_x,
-            vector_3_t * last_measurement_y,
-            vector_3_t * last_measurement_z,
-            track_following_t * track_following)
+            vector_3_t* last_measurement_x,
+            vector_3_t* last_measurement_y,
+            vector_3_t* last_measurement_z,
+            track_following_t* track_following)
 {
     // Estimate acceleration using previous and current waypoint velocities
     last_measurement_x->v[2] =
-        (track_following->neighbors->neighbors_list[0].velocity[0]
+        (track_following->neighbors->neighbors_list[0].velocity[0] \
         - last_measurement_x->v[1]) / 4.0f;
     last_measurement_y->v[2] =
-        (track_following->neighbors->neighbors_list[0].velocity[1]
+        (track_following->neighbors->neighbors_list[0].velocity[1] \
         - last_measurement_y->v[1]) / 4.0f;
     last_measurement_z->v[2] =
-        (track_following->neighbors->neighbors_list[0].velocity[2]
+        (track_following->neighbors->neighbors_list[0].velocity[2] \
         - last_measurement_z->v[1]) / 4.0f;
 
     // Get last waypoint data for x, y and z

@@ -102,10 +102,10 @@ bool track_following_new_message_received(track_following_t* track_following);
 
 // \brief   Update last measurement with the new waypoint received from target
 void track_following_update_last_measurement(
-            vector_3_t * last_measurement_x,
-            vector_3_t * last_measurement_y,
-            vector_3_t * last_measurement_z,
-            track_following_t * track_following);
+            vector_3_t* last_measurement_x,
+            vector_3_t* last_measurement_y,
+            vector_3_t* last_measurement_z,
+            track_following_t* track_following);
 
 
 // CONTROL //

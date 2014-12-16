@@ -91,23 +91,47 @@ void track_following_get_waypoint(track_following_t* track_following);
 void track_following_improve_waypoint_following(track_following_t* track_following);
 
 
-// KALMAN PREDICTOR //
-// Calls the kalman predictor to get a new waypoint
+/**
+ * \brief   Handle the Kalman predictor
+ *
+ * \param   track_following         The pointer to the structure of the track following
+ */
 void track_following_kalman_predictor(track_following_t* track_following);
 
-// \brief   Check if there is a new measurement received
-// returns 1 if there is a new message
-// returns 0 otherwise
+
+/**
+ * \brief   Check if there is a new measurement received
+ *
+ * returns 1 if there is a new message
+ * returns 0 otherwise
+ *
+ * \param   track_following         The pointer to the structure of the track following
+ */
 bool track_following_new_message_received(track_following_t* track_following);
 
 
-// CONTROL //
+/**
+ * \brief   Implements PID on position for the waypoint following
+ *
+ * \param   track_following         The pointer to the structure of the track following
+ */
 void track_following_WP_control_PID(track_following_t* track_following);
 
 
-// FUNCTIONS //
+/**
+ * \brief   Get time since last waypoint was received
+ *
+ * \param   track_following         The pointer to the structure of the track following
+ */
 uint32_t track_following_WP_time_last_ms(track_following_t* track_following);
 
+
+/**
+ * \brief   Compute distance to waypoint according to an axis
+ *
+ * \param   track_following         The pointer to the structure of the track following
+ * \param   i                       Axis to use (0 for x and 1 for y)
+ */
 float track_following_WP_distance_XYZ(track_following_t* track_following, int i);
 
 

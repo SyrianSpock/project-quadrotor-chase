@@ -78,20 +78,21 @@ void track_following_get_waypoint(track_following_t* track_following)
     track_following->dist2following = maths_fast_sqrt(track_following->dist2following);
 }
 
+
 void track_following_improve_waypoint_following(track_following_t* track_following)
 {
     // Predict waypoint position with a Kalman algorithm
     track_following_kalman_predictor(track_following);
 
-    // Apply PID control on x & z
+    // Apply PID control on x & y
     track_following_WP_control_PID(track_following);
 
     // Insure follower stays 5m below target
     track_following->waypoint_handler->waypoint_following.pos[2] -= 5.0f;
 }
 
-// KALMAN PREDICTOR //
 
+// Handle the Kalman predictor
 void track_following_kalman_predictor(track_following_t* track_following)
 {
     // Kalman variables for x, y and z axis
@@ -108,16 +109,17 @@ void track_following_kalman_predictor(track_following_t* track_following)
 
     // Initialise Kalman parameters once, and only once
     static bool kalman_init_done = FALSE;
-
     if(!kalman_init_done) {
-        // Initialise Kalman paremeters
         kalman_init(&kalman_handler_x, max_acc, delta_t);
         kalman_init(&kalman_handler_y, max_acc, delta_t);
         kalman_init(&kalman_handler_z, max_acc, delta_t);
         kalman_init_done = TRUE;
     }
 
-    // Kalman predictor loop
+    /*
+        Call the Kalman prediction loop
+        The prediction loop runs at higher rate than correction
+     */
     kalman_predict(&kalman_handler_x, max_acc, delta_t);
     kalman_predict(&kalman_handler_y, max_acc, delta_t);
     kalman_predict(&kalman_handler_z, max_acc, delta_t);
@@ -129,61 +131,71 @@ void track_following_kalman_predictor(track_following_t* track_following)
             point velocity in order to compute a more accurate acceleration
             on the x and y axis
         */
-        vector_2_t p1, p2, p3, p4; // control points for Bezier interpolation
-        vector_2_t bp; // estimated velocity just before current measured waypoint
+        vector_2_t p1, p2, p3, p4; // Control points for Bezier interpolation
+        vector_2_t bp; // Bezier estimated velocity
         float t = 0.9f;
 
-        // control point 1 : previous measured waypoint
+        // Control point 1 : previous measured waypoint
         p1.v[0] = last_measurement_x.v[0];
         p1.v[1] = last_measurement_y.v[0];
-        // control point 2 : previous measured waypoint + velocity at that waypoint
+        // Control point 2 : prev. measured waypoint + velocity at that waypoint
         p2.v[0] = p1.v[0] + last_measurement_x.v[1];
         p2.v[1] = p1.v[1] + last_measurement_y.v[1];
-        // control point 3 : current measured waypoint
+        // Control point 3 : current measured waypoint
         p4.v[0] = track_following->neighbors->neighbors_list[0].position[0];
         p4.v[1] = track_following->neighbors->neighbors_list[0].position[1];
-        // control point 4 : previous measured waypoint
+        // Control point 4 : previous measured waypoint
         p3.v[0] = p4.v[0] - track_following->neighbors->neighbors_list[0].velocity[0];
         p3.v[1] = p4.v[1] - track_following->neighbors->neighbors_list[0].velocity[1];
 
-        // compute estimated velocity according to Bezier interpolation
+        // Compute estimated velocity according to Bezier interpolation
         bp.v[0] = 3 * (1 - t) * (1 - t) * (p2.v[0] - p1.v[0]) \
                   + 6 * (1 - t) * t * (p3.v[0] - p2.v[0]) \
                   + 3 * t * t * (p4.v[0] - p3.v[0]);
         bp.v[1] = 3 * (1 - t) * (1 - t) * (p2.v[1] - p1.v[1]) \
                   + 6 * (1 - t) * t * (p3.v[1] - p2.v[1]) \
                   + 3 * t * t * (p4.v[1] - p3.v[1]);
-        // Get Bezier velocity estimate as the previous velocity
         bp.v[0] = bp.v[0] / 3.0f;
         bp.v[1] = bp.v[1] / 3.0f;
-		
-		// Use Bezier estimated velocity to compute more accurate acceleration along x and y
-		last_measurement_x.v[2] = (track_following->neighbors->neighbors_list[0].velocity[0] - bp.v[0]) / 0.4f;
-		last_measurement_y.v[2] = (track_following->neighbors->neighbors_list[0].velocity[1] - bp.v[1]) / 0.4f;
-		
-		// Use less accurate estimate on acceleration along z using previous waypoint data
-		last_measurement_z.v[2] = (track_following->neighbors->neighbors_list[0].velocity[2] - last_measurement_z.v[1]) / 4.0f;
-		
-        // Get last waypoint data for x, y and z
+
+        /*
+            Use Bezier estimated velocity to compute more accurate acceleration along x and y
+         */
+        last_measurement_x.v[2] =
+            (track_following->neighbors->neighbors_list[0].velocity[0]
+            - bp.v[0]) / 0.4f;
+        last_measurement_y.v[2] =
+            (track_following->neighbors->neighbors_list[0].velocity[1]
+            - bp.v[1]) / 0.4f;
+
+        /*
+            Use less accurate estimate on acceleration along z using previous waypoint data
+         */
+        last_measurement_z.v[2] = (track_following->neighbors->neighbors_list[0].velocity[2] - last_measurement_z.v[1]) / 4.0f;
+
+        // Get last waypoint position data for x, y and z
         last_measurement_x.v[0] =
             track_following->neighbors->neighbors_list[0].position[0];
         last_measurement_y.v[0] =
             track_following->neighbors->neighbors_list[0].position[1];
         last_measurement_z.v[0] =
             track_following->neighbors->neighbors_list[0].position[2];
+
+        // Get last waypoint position data for x, y and z
         last_measurement_x.v[1] =
             track_following->neighbors->neighbors_list[0].velocity[0];
         last_measurement_y.v[1] =
             track_following->neighbors->neighbors_list[0].velocity[1];
         last_measurement_z.v[1] =
             track_following->neighbors->neighbors_list[0].velocity[2];
+
         // Correct Kalman predictor with this new data
         kalman_correct(&kalman_handler_x, &last_measurement_x, track_following);
         kalman_correct(&kalman_handler_y, &last_measurement_y, track_following);
         kalman_correct(&kalman_handler_z, &last_measurement_z, track_following);
     }
 
-    // Use Kalman prediction output as waypoint
+    // Use Kalman position prediction output as waypoint
     track_following->waypoint_handler->waypoint_following.pos[0] =
         kalman_handler_x.state_estimate.v[0];
     track_following->waypoint_handler->waypoint_following.pos[1] =
@@ -192,7 +204,8 @@ void track_following_kalman_predictor(track_following_t* track_following)
         kalman_handler_z.state_estimate.v[0];
 }
 
-// Function to check if there is a new measurement received
+
+// Check if there is a new measurement received
 bool track_following_new_message_received(track_following_t* track_following)
 {
     // Flag to signal the disponibility of a new measurement
@@ -211,14 +224,15 @@ bool track_following_new_message_received(track_following_t* track_following)
     return new_measurement_received;
 }
 
-// CONTROL //
 
-// Implement PID for the waypoint following
+// Implements PID on position for the waypoint following
 void track_following_WP_control_PID(track_following_t* track_following)
 {
+    // Initialise control variables
     float error = 0;
     float offset = 0;
 
+    // Initialise PID controller on position along x axis
     static pid_controller_t track_following_pid_x =
     {
         .p_gain = 5.0f,
@@ -244,6 +258,7 @@ void track_following_WP_control_PID(track_following_t* track_following)
         .soft_zone_width = 0.0f
     };
 
+    // Initialise PID controller on position along y axis
     static pid_controller_t track_following_pid_y =
     {
         .p_gain = 5.0f,
@@ -269,6 +284,7 @@ void track_following_WP_control_PID(track_following_t* track_following)
         .soft_zone_width = 0.0f
     };
 
+    // Add Antirewind (ARW) to empty the integrator accumulator
     if (track_following_pid_x.integrator.accumulator > 15.0f) {
         track_following_pid_x.integrator.accumulator = 0.0f;
     }
@@ -276,21 +292,20 @@ void track_following_WP_control_PID(track_following_t* track_following)
         track_following_pid_y.integrator.accumulator = 0.0f;
     }
 
-    // Apply PID on x
+    // Apply PID on position along x axis
     int i = 0;
     error = track_following_WP_distance_XYZ(track_following, i);
     offset = pid_control_update(&track_following_pid_x, error);
     track_following->waypoint_handler->waypoint_following.pos[i] += offset;
-    // Apply PID on y
+    // Apply PID on position along y axis
     i = 1;
     error = track_following_WP_distance_XYZ(track_following, i);
     offset = pid_control_update(&track_following_pid_y, error);
     track_following->waypoint_handler->waypoint_following.pos[i] += offset;
 }
 
-// FUNCTIONS //
 
-// time_last_WP_ms: Time since last waypoint was received
+// Get time since last waypoint was received
 uint32_t track_following_WP_time_last_ms(track_following_t* track_following)
 {
     uint32_t timeWP = track_following->neighbors->neighbors_list[0].time_msg_received; // Last waypoint time in ms
@@ -300,7 +315,8 @@ uint32_t track_following_WP_time_last_ms(track_following_t* track_following)
     return time_offset;
 }
 
-// calculate distance to waypoint according to an axis
+
+// Compute distance to waypoint according to an axis
 float track_following_WP_distance_XYZ(track_following_t* track_following, int i)
 {
     float distance = track_following->waypoint_handler->waypoint_following.pos[i]
@@ -308,7 +324,6 @@ float track_following_WP_distance_XYZ(track_following_t* track_following, int i)
     return distance;
 }
 
-// EVALUATE //
 
 void track_following_send_dist(const track_following_t* track_following, const mavlink_stream_t* mavlink_stream, mavlink_message_t* msg)
 {

@@ -20,7 +20,7 @@ uint8_t kalman_init(
             float delta_t)
 {
     // Make sure the input is set as expected
-    if(kalman_handler == NULL || measurement_variance == NULL) {
+    if(kalman_handler == NULL) {
         return 0;
     }
 

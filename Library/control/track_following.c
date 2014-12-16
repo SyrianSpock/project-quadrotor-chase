@@ -134,11 +134,11 @@ void track_following_kalman_predictor(track_following_t* track_following)
         float t = 0.9f;
 
         // control point 1 : previous measured waypoint
-        p1.v[0] = last_measurement_x->v[0];
-        p1.v[1] = last_measurement_y->v[0];
+        p1.v[0] = last_measurement_x.v[0];
+        p1.v[1] = last_measurement_y.v[0];
         // control point 2 : previous measured waypoint + velocity at that waypoint
-        p2.v[0] = p1.v[0] + last_measurement_x->v[1];
-        p2.v[1] = p1.v[1] + last_measurement_y->v[1];
+        p2.v[0] = p1.v[0] + last_measurement_x.v[1];
+        p2.v[1] = p1.v[1] + last_measurement_y.v[1];
         // control point 3 : current measured waypoint
         p4.v[0] = track_following->neighbors->neighbors_list[0].position[0];
         p4.v[1] = track_following->neighbors->neighbors_list[0].position[1];
@@ -153,12 +153,17 @@ void track_following_kalman_predictor(track_following_t* track_following)
         bp.v[1] = 3 * (1 - t) * (1 - t) * (p2.v[1] - p1.v[1]) \
                   + 6 * (1 - t) * t * (p3.v[1] - p2.v[1]) \
                   + 3 * t * t * (p4.v[1] - p3.v[1]);
-
         // Get Bezier velocity estimate as the previous velocity
-        last_measurement_x->v[2] = bp.v[0] / 3.0f;
-        last_measurement_y->v[2] = bp.v[1] / 3.0f;
-
-
+        bp.v[0] = bp.v[0] / 3.0f;
+        bp.v[1] = bp.v[1] / 3.0f;
+		
+		// Use Bezier estimated velocity to compute more accurate acceleration along x and y
+		last_measurement_x.v[2] = (track_following->neighbors->neighbors_list[0].velocity[0] - bp.v[0]) / 0.4f;
+		last_measurement_y.v[2] = (track_following->neighbors->neighbors_list[0].velocity[1] - bp.v[1]) / 0.4f;
+		
+		// Use less accurate estimate on acceleration along z using previous waypoint data
+		last_measurement_z.v[2] = (track_following->neighbors->neighbors_list[0].velocity[2] - last_measurement_z.v[1]) / 4.0f;
+		
         // Get last waypoint data for x, y and z
         last_measurement_x.v[0] =
             track_following->neighbors->neighbors_list[0].position[0];

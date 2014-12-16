@@ -113,7 +113,7 @@ uint8_t kalman_update_measurement_residual(
 
 
 /**
- * \brief   Computes the new measurement residual using the new measurement data
+ * \brief   Computes the new Kalman gain
  *
  * \param   kalman_handler          Pointer to the structure that contains all
  *                                    the main Kalman parameters

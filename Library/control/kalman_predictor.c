@@ -156,7 +156,7 @@ uint8_t kalman_update_measurement_residual(
 }
 
 
-// Computes the new measurement residual using the new measurement data
+// Computes the new Kalman gain
 uint8_t kalman_compute_gain(
             kalman_handler_t * kalman_handler,
             matrix_3x3_t * kalman_gain)

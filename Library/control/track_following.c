@@ -125,18 +125,11 @@ void track_following_kalman_predictor(track_following_t* track_following)
     // Only correct the prediction if there is a new measurement
     if(track_following_new_message_received(track_following)) {
         // Get last waypoint data for x, y and z
-        last_measurement_x.v[0] =
-            track_following->neighbors->neighbors_list[0].position[0];
-        last_measurement_x.v[1] =
-            track_following->neighbors->neighbors_list[0].velocity[0];
-        last_measurement_y.v[0] =
-            track_following->neighbors->neighbors_list[0].position[1];
-        last_measurement_y.v[1] =
-            track_following->neighbors->neighbors_list[0].velocity[1];
-        last_measurement_z.v[0] =
-            track_following->neighbors->neighbors_list[0].position[2];
-        last_measurement_z.v[1] =
-            track_following->neighbors->neighbors_list[0].velocity[2];
+        track_following_update_last_measurement(
+            &last_measurement_x,
+            &last_measurement_y,
+            &last_measurement_z,
+            track_following);
         // Correct Kalman predictor with this new data
         kalman_correct(&kalman_handler_x, &last_measurement_x, track_following);
         kalman_correct(&kalman_handler_y, &last_measurement_y, track_following);
@@ -168,6 +161,27 @@ bool track_following_new_message_received(track_following_t* track_following)
     }
 
     return new_measurement_received;
+}
+
+void track_following_update_last_measurement(
+            vector_3_t * last_measurement_x,
+            vector_3_t * last_measurement_y,
+            vector_3_t * last_measurement_z,
+            track_following_t * track_following)
+{
+    // Get last waypoint data for x, y and z
+    last_measurement_x->v[0] =
+        track_following->neighbors->neighbors_list[0].position[0];
+    last_measurement_x->v[1] =
+        track_following->neighbors->neighbors_list[0].velocity[0];
+    last_measurement_y->v[0] =
+        track_following->neighbors->neighbors_list[0].position[1];
+    last_measurement_y->v[1] =
+        track_following->neighbors->neighbors_list[0].velocity[1];
+    last_measurement_z->v[0] =
+        track_following->neighbors->neighbors_list[0].position[2];
+    last_measurement_z->v[1] =
+        track_following->neighbors->neighbors_list[0].velocity[2];
 }
 
 // CONTROL //
